@@ -1,13 +1,12 @@
 use super::types::*;
+use itertools::Itertools;
 use std::rc::Rc;
 
 pub fn car_obj(obj: Rc<Object>) -> Rc<Object> {
     match &*obj {
         Object::Error(_) => obj.clone(),
         Object::Cons(cons) => car_cons(&cons),
-        _ => Rc::new(Object::Error(Error {
-            message: String::from("TODO: Error message"),
-        })),
+        _ => Rc::new(Object::Error(make_type_error("car_obj", &[&*obj]))),
     }
 }
 
@@ -22,9 +21,7 @@ pub fn cdr_obj(obj: Rc<Object>) -> Rc<Object> {
     match &*obj {
         Object::Error(_) => obj.clone(),
         Object::Cons(cons) => cdr_cons(&cons),
-        _ => Rc::new(Object::Error(Error {
-            message: String::from("TODO: Error message"),
-        })),
+        _ => Rc::new(Object::Error(make_type_error("cdr_obj", &[&*obj]))),
     }
 }
 
@@ -44,9 +41,10 @@ pub fn add(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
                 value: lhs.value + rhs.value,
             }))
         }
-        _ => Rc::new(Object::Error(Error {
-            message: String::from("TODO: Error message"),
-        })),
+        _ => Rc::new(Object::Error(make_type_error(
+            "add",
+            &[&*lhs_obj, &*rhs_obj],
+        ))),
     }
 }
 
@@ -59,9 +57,10 @@ pub fn sub(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
                 value: lhs.value - rhs.value,
             }))
         }
-        _ => Rc::new(Object::Error(Error {
-            message: String::from("TODO: Error message"),
-        })),
+        _ => Rc::new(Object::Error(make_type_error(
+            "sub",
+            &[&*lhs_obj, &*rhs_obj],
+        ))),
     }
 }
 
@@ -74,9 +73,10 @@ pub fn mul(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
                 value: lhs.value * rhs.value,
             }))
         }
-        _ => Rc::new(Object::Error(Error {
-            message: String::from("TODO: Error message"),
-        })),
+        _ => Rc::new(Object::Error(make_type_error(
+            "mul",
+            &[&*lhs_obj, &*rhs_obj],
+        ))),
     }
 }
 
@@ -148,9 +148,9 @@ fn apply_obj(func_obj: Rc<Object>, args: &Cons, env: &Cons) -> Rc<Object> {
         Object::BuiltinFunction(func) => {
             apply_builtin_function(&func, args, env)
         }
-        _ => Rc::new(Object::Error(Error {
-            message: String::from("TODO: Error message"),
-        })),
+        _ => {
+            Rc::new(Object::Error(make_type_error("apply_obj", &[&*func_obj])))
+        }
     }
 }
 
@@ -225,11 +225,34 @@ macro_rules! make_list {
     };
 
     ($first:expr $(, $rest:expr)*) => {
-        Cons::Some {
-            0: $first,
-            1: Rc::new(Object::Cons(make_list!($($rest),*)))
-        }
+        Cons::Some($first, Rc::new(Object::Cons(make_list!($($rest),*))))
     };
+}
+
+fn name_of_contained(obj: &Object) -> &str {
+    match obj {
+        Object::Integer(_) => "(type integer)",
+        Object::Symbol(_) => "(type symbol)",
+        Object::Error(_) => "(type error)",
+        Object::Function(_) => "(type function)",
+        Object::BuiltinFunction(_) => "(type builtin-function)",
+        Object::Quote(_) => "(type quote)",
+        Object::Cons(_) => "(type cons)",
+    }
+}
+
+fn make_type_error(func_name: &str, args: &[&Object]) -> Error {
+    Error {
+        message: format!(
+            "{} is not callable with types ({})",
+            func_name,
+            args.iter()
+                .copied()
+                .map(name_of_contained)
+                .intersperse(" ")
+                .collect::<String>()
+        ),
+    }
 }
 
 fn is_proper_list(list: &Cons) -> bool {
