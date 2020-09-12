@@ -24,7 +24,7 @@ fn to_cons_string(obj: Rc<Object>) -> String {
                 to_cons_string(second.clone())
             ),
         },
-        _ => to_string_obj(obj),
+        _ => format!(" . {})", to_string_obj(obj)),
     }
 }
 

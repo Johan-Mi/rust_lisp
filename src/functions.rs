@@ -11,7 +11,7 @@ pub fn car_obj(obj: Rc<Object>) -> Rc<Object> {
     }
 }
 
-fn car_cons(obj: &Cons) -> Rc<Object> {
+pub fn car_cons(obj: &Cons) -> Rc<Object> {
     match &*obj {
         Cons::Some(first, _) => first.clone(),
         Cons::Nil => Rc::new(Object::Cons(Cons::Nil)),
@@ -28,14 +28,14 @@ pub fn cdr_obj(obj: Rc<Object>) -> Rc<Object> {
     }
 }
 
-fn cdr_cons(obj: &Cons) -> Rc<Object> {
+pub fn cdr_cons(obj: &Cons) -> Rc<Object> {
     match &*obj {
         Cons::Some(_, second) => second.clone(),
         Cons::Nil => Rc::new(Object::Cons(Cons::Nil)),
     }
 }
 
-fn add(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
+pub fn add(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
     match (&*lhs_obj, &*rhs_obj) {
         (Object::Error(_), _) => lhs_obj.clone(),
         (_, Object::Error(_)) => rhs_obj.clone(),
@@ -50,7 +50,7 @@ fn add(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
     }
 }
 
-fn sub(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
+pub fn sub(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
     match (&*lhs_obj, &*rhs_obj) {
         (Object::Error(_), _) => lhs_obj.clone(),
         (_, Object::Error(_)) => rhs_obj.clone(),
@@ -65,7 +65,7 @@ fn sub(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
     }
 }
 
-fn mul(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
+pub fn mul(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
     match (&*lhs_obj, &*rhs_obj) {
         (Object::Error(_), _) => lhs_obj.clone(),
         (_, Object::Error(_)) => rhs_obj.clone(),
@@ -77,6 +77,16 @@ fn mul(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
         _ => Rc::new(Object::Error(Error {
             message: String::from("TODO: Error message"),
         })),
+    }
+}
+
+pub fn list_length(list: &Cons) -> usize {
+    match list {
+        Cons::Nil => 0,
+        Cons::Some(_, next) => match &**next {
+            Object::Cons(rest) => list_length(&rest) + 1,
+            _ => 1,
+        },
     }
 }
 
@@ -163,7 +173,7 @@ fn apply_function(func: &Function, args: &Cons, env: &Cons) -> Rc<Object> {
     );
 }
 
-fn eval_obj(obj: Rc<Object>, env: &Cons) -> Rc<Object> {
+pub fn eval_obj(obj: Rc<Object>, env: &Cons) -> Rc<Object> {
     match &*obj {
         Object::Error(_)
         | Object::Integer(_)
@@ -220,4 +230,34 @@ macro_rules! make_list {
             1: Rc::new(Object::Cons(make_list!($($rest),*)))
         }
     };
+}
+
+fn is_proper_list(list: &Cons) -> bool {
+    match list {
+        Cons::Nil => true,
+        Cons::Some(_, next) => match &**next {
+            Object::Cons(rest) => is_proper_list(&rest),
+            _ => false,
+        },
+    }
+}
+
+pub fn ensure_n_args(func_name: &str, n: usize, list: &Cons) -> Option<Error> {
+    if !is_proper_list(list) {
+        return Some(Error {
+            message: format!("Call to {} must be a proper list", func_name),
+        });
+    }
+
+    let length = list_length(list);
+    if length != n {
+        return Some(Error {
+            message: format!(
+                "{} expected {} arguments but got {}",
+                func_name, n, length
+            ),
+        });
+    }
+
+    return None;
 }
