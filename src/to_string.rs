@@ -4,13 +4,13 @@ use std::rc::Rc;
 
 pub fn to_string_obj(obj: Rc<Object>) -> String {
     match &*obj {
-        Object::Integer(contained) => format!("{}", contained),
-        Object::Symbol(contained) => format!("{}", contained),
-        Object::Error(contained) => format!("{}", contained),
-        Object::Function(contained) => format!("{}", contained),
-        Object::BuiltinFunction(contained) => format!("{}", contained),
-        Object::Quote(contained) => format!("{}", contained),
-        Object::Cons(contained) => format!("{}", contained),
+        Object::Integer(contained) => contained.to_string(),
+        Object::Symbol(contained) => contained.to_string(),
+        Object::Error(contained) => contained.to_string(),
+        Object::Function(contained) => contained.to_string(),
+        Object::BuiltinFunction(contained) => contained.to_string(),
+        Object::Quote(contained) => contained.to_string(),
+        Object::Cons(contained) => contained.to_string(),
     }
 }
 

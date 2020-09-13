@@ -27,17 +27,9 @@ fn char_is_symbol_subsequent(c: char) -> bool {
 
 fn parse_integer(tokens: &[Token]) -> Option<(Integer, &[Token])> {
     match tokens.first() {
-        Some(first_token) => {
-            if first_token.token_type != TokenType::Ident {
-                None
-            } else {
-                match first_token.string.parse() {
-                    Ok(num) => {
-                        Some((Integer { value: num }, tokens.get(1..).unwrap()))
-                    }
-                    _ => None,
-                }
-            }
+        Some(first_token) if first_token.token_type == TokenType::Ident => {
+            let num = first_token.string.parse().ok()?;
+            Some((Integer { value: num }, tokens.get(1..).unwrap()))
         }
         _ => None,
     }
@@ -45,12 +37,19 @@ fn parse_integer(tokens: &[Token]) -> Option<(Integer, &[Token])> {
 
 fn parse_symbol(tokens: &[Token]) -> Option<(Symbol, &[Token])> {
     match tokens.first() {
-        Some(first_token) => {
-            if first_token.token_type != TokenType::Ident {
-                None
-            } else if first_token.string == "+"
+        Some(first_token) if first_token.token_type == TokenType::Ident => {
+            if first_token.string == "+"
                 || first_token.string == "-"
                 || first_token.string == "..."
+                || {
+                    let first_char = first_token.string.chars().next()?;
+                    char_is_symbol_initial(first_char)
+                        && first_token
+                            .string
+                            .chars()
+                            .skip(1)
+                            .all(char_is_symbol_subsequent)
+                }
             {
                 Some((
                     Symbol {
@@ -59,28 +58,7 @@ fn parse_symbol(tokens: &[Token]) -> Option<(Symbol, &[Token])> {
                     tokens.get(1..).unwrap(),
                 ))
             } else {
-                let maybe_first_char = first_token.string.chars().next();
-                match maybe_first_char {
-                    Some(first_char) => {
-                        if char_is_symbol_initial(first_char)
-                            && first_token
-                                .string
-                                .chars()
-                                .skip(1)
-                                .all(char_is_symbol_subsequent)
-                        {
-                            Some((
-                                Symbol {
-                                    name: first_token.string.clone(),
-                                },
-                                tokens.get(1..).unwrap(),
-                            ))
-                        } else {
-                            None
-                        }
-                    }
-                    _ => None,
-                }
+                None
             }
         }
         _ => None,
@@ -127,55 +105,38 @@ fn parse_dot(tokens: &[Token]) -> Option<&[Token]> {
 }
 
 fn parse_quoted_expression(tokens: &[Token]) -> Option<(Quote, &[Token])> {
-    match parse_quote(tokens) {
-        Some(remaining_tokens) => match parse_expression(remaining_tokens) {
-            Some((expr, unconsumed_tokens)) => {
-                Some((Quote { contained: expr }, unconsumed_tokens))
-            }
-            _ => None,
-        },
-        _ => None,
-    }
+    let remaining_tokens = parse_quote(tokens)?;
+    let (expr, unconsumed_tokens) = parse_expression(remaining_tokens)?;
+    Some((Quote { contained: expr }, unconsumed_tokens))
 }
 
 fn parse_cons(tokens: &[Token]) -> Option<(Cons, &[Token])> {
-    match parse_lparen(tokens) {
-        Some(remaining_tokens) => parse_cons_helper(remaining_tokens),
-        _ => None,
-    }
+    let remaining_tokens = parse_lparen(tokens)?;
+    parse_cons_helper(remaining_tokens)
 }
 
 fn parse_cons_helper(tokens: &[Token]) -> Option<(Cons, &[Token])> {
     match parse_rparen(tokens) {
         Some(unconsumed_tokens) => Some((Cons::Nil, unconsumed_tokens)),
-        _ => match parse_expression(tokens) {
-            Some((first_expr, remaining_tokens)) => {
-                match parse_dot(remaining_tokens) {
-                    Some(remaining_tokens) => {
-                        match parse_expression(remaining_tokens) {
-                            Some((last_expr, remaining_tokens)) => {
-                                match parse_rparen(remaining_tokens) {
-                                    Some(unconsumed_tokens) => Some((
-                                        Cons::Some(first_expr, last_expr),
-                                        unconsumed_tokens,
-                                    )),
-                                    _ => None,
-                                }
-                            }
-                            _ => None,
-                        }
-                    }
-                    _ => match parse_cons_helper(remaining_tokens) {
-                        Some((rest, remaining_tokens)) => Some((
-                            Cons::Some(first_expr, Rc::new(Object::Cons(rest))),
-                            remaining_tokens,
-                        )),
-                        _ => None,
-                    },
+        _ => {
+            let (first_expr, remaining_tokens) = parse_expression(tokens)?;
+            match parse_dot(remaining_tokens) {
+                Some(remaining_tokens) => {
+                    let (last_expr, remaining_tokens) =
+                        parse_expression(remaining_tokens)?;
+                    let unconsumed_tokens = parse_rparen(remaining_tokens)?;
+                    Some((Cons::Some(first_expr, last_expr), unconsumed_tokens))
+                }
+                _ => {
+                    let (rest, remaining_tokens) =
+                        parse_cons_helper(remaining_tokens)?;
+                    Some((
+                        Cons::Some(first_expr, Rc::new(Object::Cons(rest))),
+                        remaining_tokens,
+                    ))
                 }
             }
-            _ => None,
-        },
+        }
     }
 }
 

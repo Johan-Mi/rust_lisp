@@ -163,14 +163,14 @@ fn apply_builtin_function(
 }
 
 fn apply_function(func: &Function, args: &Cons, env: &Cons) -> Rc<Object> {
-    return eval_obj(
+    eval_obj(
         func.body.clone(),
         &join_two_lists_cons(
             &func.parameters,
             &eval_list_elements(args, env),
             env,
         ),
-    );
+    )
 }
 
 pub fn eval_obj(obj: Rc<Object>, env: &Cons) -> Rc<Object> {
@@ -194,7 +194,9 @@ fn eval_cons(list: &Cons, env: &Cons) -> Rc<Object> {
             apply_obj(eval_obj(car_cons(list), env), &args, env)
         }
         _ => Rc::new(Object::Error(Error {
-            message: String::from("TODO: Error message"),
+            message: String::from(
+                "car of argument passed to eval_cons must be a cons",
+            ),
         })),
     }
 }
@@ -202,7 +204,7 @@ fn eval_cons(list: &Cons, env: &Cons) -> Rc<Object> {
 fn eval_symbol(symbol: &Symbol, env: &Cons) -> Rc<Object> {
     match env {
         Cons::Nil => Rc::new(Object::Error(Error {
-            message: String::from("TODO: Error message"),
+            message: format!("Unbound variable {}", symbol),
         })),
         Cons::Some(first, rest) => match &*car_obj(first.clone()) {
             Object::Symbol(found_symbol) if symbol == found_symbol => {
@@ -211,7 +213,7 @@ fn eval_symbol(symbol: &Symbol, env: &Cons) -> Rc<Object> {
             _ => match &**rest {
                 Object::Cons(next_cons) => eval_symbol(symbol, &next_cons),
                 _ => Rc::new(Object::Error(Error {
-                    message: String::from("TODO: Error message"),
+                    message: format!("Unbound variable {}", symbol),
                 })),
             },
         },
@@ -282,5 +284,5 @@ pub fn ensure_n_args(func_name: &str, n: usize, list: &Cons) -> Option<Error> {
         });
     }
 
-    return None;
+    None
 }
