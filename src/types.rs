@@ -8,6 +8,7 @@ pub enum Object {
     BuiltinFunction(BuiltinFunction),
     Quote(Quote),
     Cons(Cons),
+    Bool(Bool),
 }
 
 pub struct Integer {
@@ -33,6 +34,10 @@ pub struct Function {
 
 pub struct Quote {
     pub contained: Rc<Object>,
+}
+
+pub struct Bool {
+    pub value: bool,
 }
 
 #[derive(Clone)]

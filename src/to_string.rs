@@ -11,6 +11,7 @@ pub fn to_string_obj(obj: Rc<Object>) -> String {
         Object::BuiltinFunction(contained) => contained.to_string(),
         Object::Quote(contained) => contained.to_string(),
         Object::Cons(contained) => contained.to_string(),
+        Object::Bool(contained) => contained.to_string(),
     }
 }
 
@@ -84,5 +85,11 @@ impl fmt::Display for Cons {
                 to_cons_string(second.clone())
             ),
         }
+    }
+}
+
+impl fmt::Display for Bool {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        write!(formatter, "{}", self.value)
     }
 }

@@ -13,72 +13,44 @@ use to_string::*;
 use types::*;
 use wrapped::*;
 
+macro_rules! make_env {
+    ($($name:literal = $value:expr),*) => {
+        make_list![
+        $(
+            Rc::new(Object::Cons(Cons::Some(
+                Rc::new(Object::Symbol(Symbol {
+                    name: String::from($name),
+                })),
+                $value
+            )))
+        ),*
+        ]
+    }
+}
+
+macro_rules! make_builtin_function {
+    ($func:expr) => {
+        Rc::new(Object::BuiltinFunction(BuiltinFunction { func: $func }))
+    };
+}
+
 fn main() {
-    let env = make_list![
-        Rc::new(Object::Cons(Cons::Some(
-            Rc::new(Object::Symbol(Symbol {
-                name: String::from("car")
-            })),
-            Rc::new(Object::BuiltinFunction(BuiltinFunction {
-                func: wrapped_car
-            }))
-        ))),
-        Rc::new(Object::Cons(Cons::Some(
-            Rc::new(Object::Symbol(Symbol {
-                name: String::from("cdr")
-            })),
-            Rc::new(Object::BuiltinFunction(BuiltinFunction {
-                func: wrapped_cdr
-            }))
-        ))),
-        Rc::new(Object::Cons(Cons::Some(
-            Rc::new(Object::Symbol(Symbol {
-                name: String::from("cons")
-            })),
-            Rc::new(Object::BuiltinFunction(BuiltinFunction {
-                func: wrapped_cons
-            }))
-        ))),
-        Rc::new(Object::Cons(Cons::Some(
-            Rc::new(Object::Symbol(Symbol {
-                name: String::from("lambda")
-            })),
-            Rc::new(Object::BuiltinFunction(BuiltinFunction {
-                func: wrapped_lambda
-            }))
-        ))),
-        Rc::new(Object::Cons(Cons::Some(
-            Rc::new(Object::Symbol(Symbol {
-                name: String::from("+")
-            })),
-            Rc::new(Object::BuiltinFunction(BuiltinFunction {
-                func: wrapped_add
-            }))
-        ))),
-        Rc::new(Object::Cons(Cons::Some(
-            Rc::new(Object::Symbol(Symbol {
-                name: String::from("-")
-            })),
-            Rc::new(Object::BuiltinFunction(BuiltinFunction {
-                func: wrapped_sub
-            }))
-        ))),
-        Rc::new(Object::Cons(Cons::Some(
-            Rc::new(Object::Symbol(Symbol {
-                name: String::from("*")
-            })),
-            Rc::new(Object::BuiltinFunction(BuiltinFunction {
-                func: wrapped_mul
-            }))
-        ))),
-        Rc::new(Object::Cons(Cons::Some(
-            Rc::new(Object::Symbol(Symbol {
-                name: String::from("quote")
-            })),
-            Rc::new(Object::BuiltinFunction(BuiltinFunction {
-                func: wrapped_quote
-            }))
-        )))
+    let env = make_env![
+        "car" = make_builtin_function!(wrapped_car),
+        "cdr" = make_builtin_function!(wrapped_cdr),
+        "cons" = make_builtin_function!(wrapped_cons),
+        "lambda" = make_builtin_function!(wrapped_lambda),
+        "+" = make_builtin_function!(wrapped_add),
+        "-" = make_builtin_function!(wrapped_sub),
+        "*" = make_builtin_function!(wrapped_mul),
+        "quote" = make_builtin_function!(wrapped_quote),
+        "int->bool" = make_builtin_function!(wrapped_int_to_bool),
+        "bool->int" = make_builtin_function!(wrapped_bool_to_int),
+        "and" = make_builtin_function!(wrapped_and),
+        "or" = make_builtin_function!(wrapped_or),
+        "not" = make_builtin_function!(wrapped_not),
+        "true" = Rc::new(Object::Bool(Bool { value: true })),
+        "false" = Rc::new(Object::Bool(Bool { value: false }))
     ];
 
     match fs::read_to_string("program.lisp") {

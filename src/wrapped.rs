@@ -2,19 +2,22 @@ use super::functions::*;
 use super::types::*;
 use std::rc::Rc;
 
-pub fn wrapped_car(args: &Cons, env: &Cons) -> Rc<Object> {
-    match ensure_n_args("wrapped_car", 1, args) {
-        Some(err) => Rc::new(Object::Error(err)),
-        _ => car_obj(eval_obj(car_cons(args), env)),
-    }
+macro_rules! simple_wrap_1 {
+    ($wrapped_name:ident, $unwrapped_name:expr) => {
+        pub fn $wrapped_name(args: &Cons, env: &Cons) -> Rc<Object> {
+            match ensure_n_args(stringify!($wrapped_name), 1, args) {
+                Some(err) => Rc::new(Object::Error(err)),
+                _ => $unwrapped_name(eval_obj(car_cons(args), env)),
+            }
+        }
+    };
 }
 
-pub fn wrapped_cdr(args: &Cons, env: &Cons) -> Rc<Object> {
-    match ensure_n_args("wrapped_cdr", 1, args) {
-        Some(err) => Rc::new(Object::Error(err)),
-        _ => cdr_obj(eval_obj(car_cons(args), env)),
-    }
-}
+simple_wrap_1!(wrapped_car, car_obj);
+simple_wrap_1!(wrapped_cdr, cdr_obj);
+simple_wrap_1!(wrapped_not, not);
+simple_wrap_1!(wrapped_int_to_bool, int_to_bool);
+simple_wrap_1!(wrapped_bool_to_int, bool_to_int);
 
 pub fn wrapped_quote(args: &Cons, _env: &Cons) -> Rc<Object> {
     match ensure_n_args("wrapped_quote", 1, args) {
@@ -102,6 +105,48 @@ pub fn wrapped_lambda(args: &Cons, _env: &Cons) -> Rc<Object> {
                 message: String::from(
                     "First argument of lambda definition must be a list \
                             of parameters",
+                ),
+            })),
+        },
+    }
+}
+
+pub fn wrapped_and(args: &Cons, env: &Cons) -> Rc<Object> {
+    match args {
+        Cons::Nil => Rc::new(Object::Bool(Bool { value: true })),
+        Cons::Some(car, cdr) => match &**cdr {
+            Object::Cons(rest) => {
+                let lhs = eval_obj(car.clone(), env);
+                if is_truthy(lhs.clone()) {
+                    wrapped_and(rest, env)
+                } else {
+                    lhs
+                }
+            }
+            _ => Rc::new(Object::Error(Error {
+                message: String::from(
+                    "Arguments passed to wrapped_and must be a proper list",
+                ),
+            })),
+        },
+    }
+}
+
+pub fn wrapped_or(args: &Cons, env: &Cons) -> Rc<Object> {
+    match args {
+        Cons::Nil => Rc::new(Object::Bool(Bool { value: false })),
+        Cons::Some(car, cdr) => match &**cdr {
+            Object::Cons(rest) => {
+                let lhs = eval_obj(car.clone(), env);
+                if is_truthy(lhs.clone()) {
+                    lhs
+                } else {
+                    wrapped_or(rest, env)
+                }
+            }
+            _ => Rc::new(Object::Error(Error {
+                message: String::from(
+                    "Arguments passed to wrapped_or must be a proper list",
                 ),
             })),
         },

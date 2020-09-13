@@ -123,7 +123,7 @@ fn join_two_lists_cons(first: &Cons, second: &Cons, last: &Cons) -> Cons {
     }
 }
 
-fn eval_list_elements(list: &Cons, env: &Cons) -> Cons {
+pub fn eval_list_elements(list: &Cons, env: &Cons) -> Cons {
     match list {
         Cons::Nil => list.clone(),
         Cons::Some(first, second) => match &**second {
@@ -177,6 +177,7 @@ pub fn eval_obj(obj: Rc<Object>, env: &Cons) -> Rc<Object> {
     match &*obj {
         Object::Error(_)
         | Object::Integer(_)
+        | Object::Bool(_)
         | Object::Function(_)
         | Object::BuiltinFunction(_) => obj,
         Object::Cons(cons) => match cons {
@@ -233,13 +234,14 @@ macro_rules! make_list {
 
 fn name_of_contained(obj: &Object) -> &str {
     match obj {
-        Object::Integer(_) => "(type integer)",
+        Object::Integer(_) => "(type int)",
         Object::Symbol(_) => "(type symbol)",
         Object::Error(_) => "(type error)",
         Object::Function(_) => "(type function)",
         Object::BuiltinFunction(_) => "(type builtin-function)",
         Object::Quote(_) => "(type quote)",
         Object::Cons(_) => "(type cons)",
+        Object::Bool(_) => "(type bool)",
     }
 }
 
@@ -285,4 +287,35 @@ pub fn ensure_n_args(func_name: &str, n: usize, list: &Cons) -> Option<Error> {
     }
 
     None
+}
+
+pub fn int_to_bool(obj: Rc<Object>) -> Rc<Object> {
+    match &*obj {
+        Object::Integer(val) => Rc::new(Object::Bool(Bool {
+            value: val.value != 0,
+        })),
+        _ => Rc::new(Object::Error(make_type_error("int_to_bool", &[&*obj]))),
+    }
+}
+
+pub fn bool_to_int(obj: Rc<Object>) -> Rc<Object> {
+    match &*obj {
+        Object::Bool(val) => Rc::new(Object::Integer(Integer {
+            value: val.value as i32,
+        })),
+        _ => Rc::new(Object::Error(make_type_error("bool_to_int", &[&*obj]))),
+    }
+}
+
+pub fn is_truthy(obj: Rc<Object>) -> bool {
+    match &*obj {
+        Object::Bool(b) => b.value,
+        _ => true,
+    }
+}
+
+pub fn not(obj: Rc<Object>) -> Rc<Object> {
+    Rc::new(Object::Bool(Bool {
+        value: !is_truthy(obj),
+    }))
 }
