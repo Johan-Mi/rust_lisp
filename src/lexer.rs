@@ -24,8 +24,11 @@ pub fn lex(s: &str) -> Vec<Token> {
         match c {
             '(' => {
                 if !current_token.string.is_empty() {
-                    ret.push(current_token.clone());
-                    current_token.string.clear();
+                    ret.push(current_token);
+                    current_token = Token {
+                        token_type: TokenType::Ident,
+                        string: String::new(),
+                    };
                 }
                 ret.push(Token {
                     token_type: TokenType::LParen,
@@ -34,8 +37,11 @@ pub fn lex(s: &str) -> Vec<Token> {
             }
             ')' => {
                 if !current_token.string.is_empty() {
-                    ret.push(current_token.clone());
-                    current_token.string.clear();
+                    ret.push(current_token);
+                    current_token = Token {
+                        token_type: TokenType::Ident,
+                        string: String::new(),
+                    };
                 }
                 ret.push(Token {
                     token_type: TokenType::RParen,
@@ -44,8 +50,11 @@ pub fn lex(s: &str) -> Vec<Token> {
             }
             '\'' => {
                 if !current_token.string.is_empty() {
-                    ret.push(current_token.clone());
-                    current_token.string.clear();
+                    ret.push(current_token);
+                    current_token = Token {
+                        token_type: TokenType::Ident,
+                        string: String::new(),
+                    };
                 }
                 ret.push(Token {
                     token_type: TokenType::Quote,
@@ -54,8 +63,11 @@ pub fn lex(s: &str) -> Vec<Token> {
             }
             ' ' | '\t' | '\n' => {
                 if !current_token.string.is_empty() {
-                    ret.push(current_token.clone());
-                    current_token.string.clear();
+                    ret.push(current_token);
+                    current_token = Token {
+                        token_type: TokenType::Ident,
+                        string: String::new(),
+                    };
                 }
             }
             _ => {
