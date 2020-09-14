@@ -1,11 +1,15 @@
 use super::types::*;
 use itertools::Itertools;
 use std::rc::Rc;
+// TODO Mutable environment
 
 pub fn car_obj(obj: Rc<Object>) -> Rc<Object> {
     match &*obj {
         Object::Error(_) => obj.clone(),
-        Object::Cons(cons) => car_cons(&cons),
+        Object::Cons(cons) => match cons {
+            Cons::Some(..) => car_cons(&cons),
+            Cons::Nil => obj, // We already have a nil, so let's reuse it
+        },
         _ => Rc::new(Object::Error(make_type_error("car_obj", &[&*obj]))),
     }
 }
@@ -20,7 +24,10 @@ pub fn car_cons(obj: &Cons) -> Rc<Object> {
 pub fn cdr_obj(obj: Rc<Object>) -> Rc<Object> {
     match &*obj {
         Object::Error(_) => obj.clone(),
-        Object::Cons(cons) => cdr_cons(&cons),
+        Object::Cons(cons) => match cons {
+            Cons::Some(..) => cdr_cons(&cons),
+            Cons::Nil => obj, // We already have a nil, so let's reuse it
+        },
         _ => Rc::new(Object::Error(make_type_error("cdr_obj", &[&*obj]))),
     }
 }
