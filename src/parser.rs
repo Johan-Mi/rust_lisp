@@ -162,19 +162,14 @@ pub fn parse_expressions(
 ) -> Option<(Vec<Rc<Object>>, &[Token])> {
     let mut ret = Vec::<Rc<Object>>::new();
 
-    loop {
-        match parse_expression(tokens) {
-            Some((expr, remaining_tokens)) => {
-                ret.push(expr);
-                tokens = remaining_tokens;
-            }
-            _ => {
-                return if ret.is_empty() {
-                    None
-                } else {
-                    Some((ret, tokens))
-                }
-            }
-        }
+    while let Some((expr, remaining_tokens)) = parse_expression(tokens) {
+        ret.push(expr);
+        tokens = remaining_tokens;
+    }
+
+    if ret.is_empty() {
+        None
+    } else {
+        Some((ret, tokens))
     }
 }
