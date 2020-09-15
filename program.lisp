@@ -41,3 +41,8 @@
 
 (not true)
 (not false)
+
+(define a (+ 1 2))
+(* a 5)
+(define b (* a 2))
+(- b a)

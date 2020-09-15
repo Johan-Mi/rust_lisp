@@ -35,7 +35,7 @@ macro_rules! make_builtin_function {
 }
 
 fn main() {
-    let env = make_env![
+    let mut env = make_env![
         "car" = make_builtin_function!(wrapped_car),
         "cdr" = make_builtin_function!(wrapped_cdr),
         "cons" = make_builtin_function!(wrapped_cons),
@@ -49,6 +49,7 @@ fn main() {
         "and" = make_builtin_function!(wrapped_and),
         "or" = make_builtin_function!(wrapped_or),
         "not" = make_builtin_function!(wrapped_not),
+        "define" = make_builtin_function!(wrapped_define),
         "true" = Rc::new(Object::Bool(Bool { value: true })),
         "false" = Rc::new(Object::Bool(Bool { value: false }))
     ];
@@ -59,8 +60,10 @@ fn main() {
             match parse_expressions(&lexed) {
                 Some((exprs, _)) => {
                     for e in exprs {
-                        println!("{}", to_string_obj(e.clone()));
-                        println!("=> {}", to_string_obj(eval_obj(e, &env)));
+                        let (result, new_env) = eval_obj(e.clone(), &env);
+                        env = new_env;
+                        println!("{}", to_string_obj(e));
+                        println!("=> {}", to_string_obj(result));
                     }
                 }
                 _ => {

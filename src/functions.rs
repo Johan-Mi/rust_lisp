@@ -130,34 +130,50 @@ fn join_two_lists_cons(first: &Cons, second: &Cons, last: &Cons) -> Cons {
     }
 }
 
-pub fn eval_list_elements(list: &Cons, env: &Cons) -> Cons {
+pub fn eval_list_elements(list: &Cons, env: &Cons) -> (Cons, Cons) {
     match list {
-        Cons::Nil => list.clone(),
+        Cons::Nil => (list.clone(), env.clone()),
         Cons::Some(first, second) => match &**second {
-            Object::Cons(rest) => Cons::Some {
-                0: eval_obj(first.clone(), env),
-                1: Rc::<Object>::new(Object::Cons(eval_list_elements(
-                    rest, env,
-                ))),
-            },
-            _ => Cons::Some {
-                0: eval_obj(first.clone(), env),
-                1: Rc::<Object>::new(Object::Cons(Cons::Nil)),
-            },
+            Object::Cons(rest) => {
+                let (evaluated_first, env) = eval_obj(first.clone(), env);
+                let (evaluated_rest, env) = eval_list_elements(rest, &env);
+                (
+                    Cons::Some {
+                        0: evaluated_first,
+                        1: Rc::<Object>::new(Object::Cons(evaluated_rest)),
+                    },
+                    env,
+                )
+            }
+            _ => {
+                let (evaluated_first, env) = eval_obj(first.clone(), env);
+                (
+                    Cons::Some {
+                        0: evaluated_first,
+                        1: Rc::new(Object::Cons(Cons::Nil)),
+                    },
+                    env,
+                )
+            }
         },
     }
 }
 
-fn apply_obj(func_obj: Rc<Object>, args: &Cons, env: &Cons) -> Rc<Object> {
+fn apply_obj(
+    func_obj: Rc<Object>,
+    args: &Cons,
+    env: &Cons,
+) -> (Rc<Object>, Cons) {
     match &*func_obj {
-        Object::Error(_) => func_obj,
+        Object::Error(_) => (func_obj, env.clone()),
         Object::Function(func) => apply_function(&func, args, env),
         Object::BuiltinFunction(func) => {
             apply_builtin_function(&func, args, env)
         }
-        _ => {
-            Rc::new(Object::Error(make_type_error("apply_obj", &[&*func_obj])))
-        }
+        _ => (
+            Rc::new(Object::Error(make_type_error("apply_obj", &[&*func_obj]))),
+            env.clone(),
+        ),
     }
 }
 
@@ -165,67 +181,78 @@ fn apply_builtin_function(
     func: &BuiltinFunction,
     args: &Cons,
     env: &Cons,
-) -> Rc<Object> {
+) -> (Rc<Object>, Cons) {
     (func.func)(args, env)
 }
 
-fn apply_function(func: &Function, args: &Cons, env: &Cons) -> Rc<Object> {
+fn apply_function(
+    func: &Function,
+    args: &Cons,
+    env: &Cons,
+) -> (Rc<Object>, Cons) {
+    let (calling_args, env) = eval_list_elements(args, env);
     eval_obj(
         func.body.clone(),
-        &join_two_lists_cons(
-            &func.parameters,
-            &eval_list_elements(args, env),
-            env,
-        ),
+        &join_two_lists_cons(&func.parameters, &calling_args, &env),
     )
 }
 
-pub fn eval_obj(obj: Rc<Object>, env: &Cons) -> Rc<Object> {
+pub fn eval_obj(obj: Rc<Object>, env: &Cons) -> (Rc<Object>, Cons) {
     match &*obj {
         Object::Error(_)
         | Object::Integer(_)
         | Object::Bool(_)
         | Object::Function(_)
-        | Object::BuiltinFunction(_) => obj,
+        | Object::BuiltinFunction(_) => (obj, env.clone()),
         Object::Cons(cons) => match cons {
-            Cons::Nil => obj,
+            Cons::Nil => (obj, env.clone()),
             _ => eval_cons(&cons, env),
         },
         Object::Symbol(symbol) => eval_symbol(&symbol, env),
-        Object::Quote(quote) => quote.contained.clone(),
+        Object::Quote(quote) => (quote.contained.clone(), env.clone()),
     }
 }
 
-fn eval_cons(list: &Cons, env: &Cons) -> Rc<Object> {
+fn eval_cons(list: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
     match &*cdr_cons(list) {
         Object::Cons(args) => {
-            apply_obj(eval_obj(car_cons(list), env), &args, env)
+            let (func, env) = eval_obj(car_cons(list), env);
+            apply_obj(func, &args, &env)
         }
-        _ => Rc::new(Object::Error(Error {
-            message: String::from(
-                "car of argument passed to eval_cons must be a cons",
-            ),
-        })),
+        _ => (
+            Rc::new(Object::Error(Error {
+                message: String::from(
+                    "car of argument passed to eval_cons must be a cons",
+                ),
+            })),
+            env.clone(),
+        ),
     }
 }
 
-fn eval_symbol(symbol: &Symbol, env: &Cons) -> Rc<Object> {
-    match env {
-        Cons::Nil => Rc::new(Object::Error(Error {
-            message: format!("Unbound variable {}", symbol),
-        })),
-        Cons::Some(first, rest) => match &*car_obj(first.clone()) {
-            Object::Symbol(found_symbol) if symbol == found_symbol => {
-                cdr_obj(first.clone())
-            }
-            _ => match &**rest {
-                Object::Cons(next_cons) => eval_symbol(symbol, &next_cons),
-                _ => Rc::new(Object::Error(Error {
-                    message: format!("Unbound variable {}", symbol),
-                })),
+fn eval_symbol(symbol: &Symbol, env: &Cons) -> (Rc<Object>, Cons) {
+    fn eval_symbol_internal(symbol: &Symbol, env: &Cons) -> Rc<Object> {
+        match env {
+            Cons::Nil => Rc::new(Object::Error(Error {
+                message: format!("Unbound variable {}", symbol),
+            })),
+            Cons::Some(first, rest) => match &*car_obj(first.clone()) {
+                Object::Symbol(found_symbol) if symbol == found_symbol => {
+                    cdr_obj(first.clone())
+                }
+                _ => match &**rest {
+                    Object::Cons(next_cons) => {
+                        eval_symbol_internal(symbol, &next_cons)
+                    }
+                    _ => Rc::new(Object::Error(Error {
+                        message: format!("Unbound variable {}", symbol),
+                    })),
+                },
             },
-        },
+        }
     }
+
+    (eval_symbol_internal(symbol, env), env.clone())
 }
 
 #[macro_export]

@@ -15,6 +15,7 @@ pub struct Integer {
     pub value: i32,
 }
 
+#[derive(Clone)]
 pub struct Symbol {
     pub name: String,
 }
@@ -24,7 +25,7 @@ pub struct Error {
 }
 
 pub struct BuiltinFunction {
-    pub func: fn(&Cons, &Cons) -> Rc<Object>,
+    pub func: fn(&Cons, &Cons) -> (Rc<Object>, Cons),
 }
 
 pub struct Function {
