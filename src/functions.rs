@@ -1,7 +1,6 @@
 use super::types::*;
 use itertools::Itertools;
 use std::rc::Rc;
-// TODO Mutable environment
 
 pub fn car_obj(obj: Rc<Object>) -> Rc<Object> {
     match &*obj {
