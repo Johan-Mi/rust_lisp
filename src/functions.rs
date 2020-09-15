@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 pub fn car_obj(obj: Rc<Object>) -> Rc<Object> {
     match &*obj {
-        Object::Error(_) => obj.clone(),
+        Object::Error(_) => obj,
         Object::Cons(cons) => match cons {
             Cons::Some(..) => car_cons(&cons),
             Cons::Nil => obj, // We already have a nil, so let's reuse it
@@ -23,7 +23,7 @@ pub fn car_cons(obj: &Cons) -> Rc<Object> {
 
 pub fn cdr_obj(obj: Rc<Object>) -> Rc<Object> {
     match &*obj {
-        Object::Error(_) => obj.clone(),
+        Object::Error(_) => obj,
         Object::Cons(cons) => match cons {
             Cons::Some(..) => cdr_cons(&cons),
             Cons::Nil => obj, // We already have a nil, so let's reuse it
@@ -41,8 +41,8 @@ pub fn cdr_cons(obj: &Cons) -> Rc<Object> {
 
 pub fn add(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
     match (&*lhs_obj, &*rhs_obj) {
-        (Object::Error(_), _) => lhs_obj.clone(),
-        (_, Object::Error(_)) => rhs_obj.clone(),
+        (Object::Error(_), _) => lhs_obj,
+        (_, Object::Error(_)) => rhs_obj,
         (Object::Integer(lhs), Object::Integer(rhs)) => {
             Rc::new(Object::Integer(Integer {
                 value: lhs.value + rhs.value,
@@ -57,8 +57,8 @@ pub fn add(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
 
 pub fn sub(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
     match (&*lhs_obj, &*rhs_obj) {
-        (Object::Error(_), _) => lhs_obj.clone(),
-        (_, Object::Error(_)) => rhs_obj.clone(),
+        (Object::Error(_), _) => lhs_obj,
+        (_, Object::Error(_)) => rhs_obj,
         (Object::Integer(lhs), Object::Integer(rhs)) => {
             Rc::new(Object::Integer(Integer {
                 value: lhs.value - rhs.value,
@@ -73,8 +73,8 @@ pub fn sub(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
 
 pub fn mul(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
     match (&*lhs_obj, &*rhs_obj) {
-        (Object::Error(_), _) => lhs_obj.clone(),
-        (_, Object::Error(_)) => rhs_obj.clone(),
+        (Object::Error(_), _) => lhs_obj,
+        (_, Object::Error(_)) => rhs_obj,
         (Object::Integer(lhs), Object::Integer(rhs)) => {
             Rc::new(Object::Integer(Integer {
                 value: lhs.value * rhs.value,

@@ -18,14 +18,14 @@ pub fn to_string_obj(obj: Rc<Object>) -> String {
 fn to_cons_string(obj: Rc<Object>) -> String {
     match &*obj {
         Object::Cons(cons) => match cons {
-            Cons::Nil => String::from(')'),
+            Cons::Nil => String::new(),
             Cons::Some(first, second) => format!(
                 " {}{}",
                 to_string_obj(first.clone()),
                 to_cons_string(second.clone())
             ),
         },
-        _ => format!(" . {})", to_string_obj(obj)),
+        _ => format!(" . {}", to_string_obj(obj)),
     }
 }
 
@@ -80,7 +80,7 @@ impl fmt::Display for Cons {
             Cons::Nil => write!(formatter, "()"),
             Cons::Some(first, second) => write!(
                 formatter,
-                "({}{}",
+                "({}{})",
                 to_string_obj(first.clone()),
                 to_cons_string(second.clone())
             ),

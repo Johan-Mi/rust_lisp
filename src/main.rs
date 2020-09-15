@@ -60,10 +60,7 @@ fn main() {
                 Some((exprs, _)) => {
                     for e in exprs {
                         println!("{}", to_string_obj(e.clone()));
-                        println!(
-                            "=> {}",
-                            to_string_obj(eval_obj(e.clone(), &env))
-                        );
+                        println!("=> {}", to_string_obj(eval_obj(e, &env)));
                     }
                 }
                 _ => {
