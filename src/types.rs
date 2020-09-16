@@ -15,7 +15,7 @@ pub struct Integer {
     pub value: i32,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Symbol {
     pub name: String,
 }
@@ -45,10 +45,4 @@ pub struct Bool {
 pub enum Cons {
     Some(Rc<Object>, Rc<Object>),
     Nil,
-}
-
-impl PartialEq for Symbol {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name
-    }
 }

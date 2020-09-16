@@ -160,7 +160,7 @@ pub fn parse_expression(tokens: &[Token]) -> Option<(Rc<Object>, &[Token])> {
 pub fn parse_expressions(
     mut tokens: &[Token],
 ) -> Option<(Vec<Rc<Object>>, &[Token])> {
-    let mut ret = Vec::<Rc<Object>>::new();
+    let mut ret = Vec::new();
 
     while let Some((expr, remaining_tokens)) = parse_expression(tokens) {
         ret.push(expr);

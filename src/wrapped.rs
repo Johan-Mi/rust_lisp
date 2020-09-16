@@ -35,7 +35,11 @@ pub fn wrapped_cons(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
         _ => {
             let (car, env) = eval_obj(car_cons(args), env);
             let (cdr, env) = eval_obj(car_obj(cdr_cons(args)), &env);
-            (Rc::new(Object::Cons(Cons::Some(car, cdr))), env)
+            match (&*car, &*cdr) {
+                (Object::Error(_), _) => (car, env),
+                (_, Object::Error(_)) => (cdr, env),
+                _ => (Rc::new(Object::Cons(Cons::Some(car, cdr))), env),
+            }
         }
     }
 }
@@ -152,10 +156,15 @@ pub fn wrapped_and(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = eval_obj(car.clone(), env);
-                if is_truthy(lhs.clone()) {
-                    wrapped_and(rest, &env)
-                } else {
-                    (lhs, env)
+                match &*lhs {
+                    Object::Error(_) => (lhs, env.clone()),
+                    _ => {
+                        if is_truthy(lhs.clone()) {
+                            wrapped_and(rest, &env)
+                        } else {
+                            (lhs, env)
+                        }
+                    }
                 }
             }
             _ => (
@@ -178,10 +187,15 @@ pub fn wrapped_or(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = eval_obj(car.clone(), env);
-                if is_truthy(lhs.clone()) {
-                    (lhs, env)
-                } else {
-                    wrapped_or(rest, &env)
+                match &*lhs {
+                    Object::Error(_) => (lhs, env.clone()),
+                    _ => {
+                        if is_truthy(lhs.clone()) {
+                            (lhs, env)
+                        } else {
+                            wrapped_or(rest, &env)
+                        }
+                    }
                 }
             }
             _ => (
@@ -203,16 +217,19 @@ pub fn wrapped_define(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
             Object::Error(_) => (car_cons(args), env.clone()),
             Object::Symbol(var_name) => {
                 let (var_value, env) = eval_obj(car_obj(cdr_cons(args)), env);
-                (
-                    Rc::new(Object::Symbol(var_name.clone())),
-                    Cons::Some(
-                        Rc::new(Object::Cons(Cons::Some(
-                            Rc::new(Object::Symbol(var_name.clone())),
-                            var_value,
-                        ))),
-                        Rc::new(Object::Cons(env)),
+                match &*var_value {
+                    Object::Error(_) => (var_value, env),
+                    _ => (
+                        Rc::new(Object::Symbol(var_name.clone())),
+                        Cons::Some(
+                            Rc::new(Object::Cons(Cons::Some(
+                                Rc::new(Object::Symbol(var_name.clone())),
+                                var_value,
+                            ))),
+                            Rc::new(Object::Cons(env)),
+                        ),
                     ),
-                )
+                }
             }
             _ => (
                 Rc::new(Object::Error(Error {

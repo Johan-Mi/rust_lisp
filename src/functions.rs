@@ -348,7 +348,10 @@ pub fn is_truthy(obj: Rc<Object>) -> bool {
 }
 
 pub fn not(obj: Rc<Object>) -> Rc<Object> {
-    Rc::new(Object::Bool(Bool {
-        value: !is_truthy(obj),
-    }))
+    match &*obj {
+        Object::Error(_) => obj,
+        _ => Rc::new(Object::Bool(Bool {
+            value: !is_truthy(obj),
+        })),
+    }
 }
