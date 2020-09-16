@@ -3,61 +3,52 @@ use super::types::*;
 use std::rc::Rc;
 
 fn parse_integer(tokens: &[Token]) -> Option<(Integer, &[Token])> {
-    match tokens.first() {
-        Some(first_token) if first_token.token_type == TokenType::Ident => {
-            let num = first_token.string.parse().ok()?;
-            Some((num, tokens.get(1..).unwrap()))
-        }
-        _ => None,
+    let first_token = tokens.first()?;
+    if let Token::Ident(num_str) = first_token {
+        let num = num_str.parse().ok()?;
+        Some((num, tokens.get(1..).unwrap()))
+    } else {
+        None
     }
 }
 
 fn parse_symbol(tokens: &[Token]) -> Option<(Symbol, &[Token])> {
-    match tokens.first() {
-        Some(first_token) if first_token.token_type == TokenType::Ident => {
-            let symbol = first_token.string.parse().ok()?;
-            Some((symbol, tokens.get(1..).unwrap()))
-        }
-        _ => None,
+    let first_token = tokens.first()?;
+    if let Token::Ident(symbol_str) = first_token {
+        let symbol = symbol_str.parse().ok()?;
+        Some((symbol, tokens.get(1..).unwrap()))
+    } else {
+        None
     }
 }
 
 fn parse_lparen(tokens: &[Token]) -> Option<&[Token]> {
     match tokens.first() {
-        Some(first_token) if first_token.token_type == TokenType::LParen => {
-            tokens.get(1..)
-        }
+        Some(first_token) if first_token == &Token::LParen => tokens.get(1..),
         _ => None,
     }
 }
 
 fn parse_rparen(tokens: &[Token]) -> Option<&[Token]> {
     match tokens.first() {
-        Some(first_token) if first_token.token_type == TokenType::RParen => {
-            tokens.get(1..)
-        }
+        Some(first_token) if first_token == &Token::RParen => tokens.get(1..),
         _ => None,
     }
 }
 
 fn parse_quote(tokens: &[Token]) -> Option<&[Token]> {
     match tokens.first() {
-        Some(first_token) if first_token.token_type == TokenType::Quote => {
-            tokens.get(1..)
-        }
+        Some(first_token) if first_token == &Token::Quote => tokens.get(1..),
         _ => None,
     }
 }
 
 fn parse_dot(tokens: &[Token]) -> Option<&[Token]> {
-    match tokens.first() {
-        Some(first_token)
-            if first_token.token_type == TokenType::Ident
-                && first_token.string == "." =>
-        {
-            tokens.get(1..)
-        }
-        _ => None,
+    let first_token = tokens.first()?;
+    if first_token == &Token::Ident(String::from(".")) {
+        tokens.get(1..)
+    } else {
+        None
     }
 }
 

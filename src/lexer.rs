@@ -1,83 +1,53 @@
 #[derive(Clone, PartialEq, Debug)]
-pub enum TokenType {
+pub enum Token {
     LParen,
     RParen,
     Quote,
-    Ident,
-}
-
-#[derive(Clone, Debug)]
-pub struct Token {
-    pub token_type: TokenType,
-    pub string: String,
+    Ident(String),
 }
 
 pub fn lex(s: &str) -> Vec<Token> {
     let mut ret = Vec::new();
 
-    let mut current_token = Token {
-        token_type: TokenType::Ident,
-        string: String::new(),
-    };
+    let mut string_buffer = String::new();
 
     for c in s.chars() {
         match c {
             '(' => {
-                if !current_token.string.is_empty() {
-                    ret.push(current_token);
-                    current_token = Token {
-                        token_type: TokenType::Ident,
-                        string: String::new(),
-                    };
+                if !string_buffer.is_empty() {
+                    ret.push(Token::Ident(string_buffer));
+                    string_buffer = String::new();
                 }
-                ret.push(Token {
-                    token_type: TokenType::LParen,
-                    string: String::new(),
-                });
+                ret.push(Token::LParen);
             }
             ')' => {
-                if !current_token.string.is_empty() {
-                    ret.push(current_token);
-                    current_token = Token {
-                        token_type: TokenType::Ident,
-                        string: String::new(),
-                    };
+                if !string_buffer.is_empty() {
+                    ret.push(Token::Ident(string_buffer));
+                    string_buffer = String::new();
                 }
-                ret.push(Token {
-                    token_type: TokenType::RParen,
-                    string: String::new(),
-                });
+                ret.push(Token::RParen);
             }
             '\'' => {
-                if !current_token.string.is_empty() {
-                    ret.push(current_token);
-                    current_token = Token {
-                        token_type: TokenType::Ident,
-                        string: String::new(),
-                    };
+                if !string_buffer.is_empty() {
+                    ret.push(Token::Ident(string_buffer));
+                    string_buffer = String::new();
                 }
-                ret.push(Token {
-                    token_type: TokenType::Quote,
-                    string: String::new(),
-                });
+                ret.push(Token::Quote);
             }
             ' ' | '\t' | '\n' => {
-                if !current_token.string.is_empty() {
-                    ret.push(current_token);
-                    current_token = Token {
-                        token_type: TokenType::Ident,
-                        string: String::new(),
-                    };
+                if !string_buffer.is_empty() {
+                    ret.push(Token::Ident(string_buffer));
+                    string_buffer = String::new();
                 }
             }
             _ => {
-                current_token.string.push(c);
+                string_buffer.push(c);
             }
         }
     }
 
-    if !current_token.string.is_empty() {
-        ret.push(current_token);
+    if !string_buffer.is_empty() {
+        ret.push(Token::Ident(string_buffer));
     }
 
     ret
