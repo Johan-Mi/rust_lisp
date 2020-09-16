@@ -1,4 +1,6 @@
+use std::num::ParseIntError;
 use std::rc::Rc;
+use std::str::FromStr;
 
 pub enum Object {
     Integer(Integer),
@@ -45,4 +47,48 @@ pub struct Bool {
 pub enum Cons {
     Some(Rc<Object>, Rc<Object>),
     Nil,
+}
+
+impl FromStr for Integer {
+    type Err = ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Integer { value: s.parse()? })
+    }
+}
+
+impl FromStr for Symbol {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        fn char_is_symbol_initial(c: char) -> bool {
+            c.is_alphabetic()
+                || match c {
+                    '!' | '$' | '%' | '&' | '*' | '/' | ':' | '<' | '='
+                    | '>' | '?' | '^' | '_' | '~' => true,
+                    _ => false,
+                }
+        }
+
+        fn char_is_symbol_subsequent(c: char) -> bool {
+            char_is_symbol_initial(c)
+                || c.is_digit(10)
+                || match c {
+                    '+' | '.' | '@' | '-' => true,
+                    _ => false,
+                }
+        }
+
+        if s == "+" || s == "-" || s == "..." || {
+            let first_char = s.chars().next().ok_or(())?;
+            char_is_symbol_initial(first_char)
+                && s.chars().skip(1).all(char_is_symbol_subsequent)
+        } {
+            Ok(Symbol {
+                name: String::from(s),
+            })
+        } else {
+            Err(())
+        }
+    }
 }
