@@ -9,7 +9,6 @@ use lexer::*;
 use parser::*;
 use std::fs;
 use std::rc::Rc;
-use to_string::*;
 use types::*;
 use wrapped::*;
 
@@ -62,8 +61,8 @@ fn main() {
                     for e in exprs {
                         let (result, new_env) = eval_obj(e.clone(), &env);
                         env = new_env;
-                        println!("{}", to_string_obj(e));
-                        println!("=> {}", to_string_obj(result));
+                        println!("{}", e);
+                        println!("=> {}", result);
                     }
                 }
                 _ => {

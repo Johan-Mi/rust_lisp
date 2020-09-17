@@ -68,7 +68,7 @@ pub fn wrapped_add(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
 }
 
 pub fn wrapped_sub(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
-    match list_length(args) {
+    match args.len() {
         0 => (
             Rc::new(Object::Error(Error {
                 message: String::from(
@@ -157,7 +157,7 @@ pub fn wrapped_and(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
             Object::Cons(rest) => {
                 let (lhs, env) = eval_obj(car.clone(), env);
                 match &*lhs {
-                    Object::Error(_) => (lhs, env.clone()),
+                    Object::Error(_) => (lhs, env),
                     _ => {
                         if is_truthy(lhs.clone()) {
                             wrapped_and(rest, &env)
@@ -188,7 +188,7 @@ pub fn wrapped_or(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
             Object::Cons(rest) => {
                 let (lhs, env) = eval_obj(car.clone(), env);
                 match &*lhs {
-                    Object::Error(_) => (lhs, env.clone()),
+                    Object::Error(_) => (lhs, env),
                     _ => {
                         if is_truthy(lhs.clone()) {
                             (lhs, env)

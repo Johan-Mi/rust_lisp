@@ -86,16 +86,6 @@ pub fn mul(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
     }
 }
 
-pub fn list_length(list: &Cons) -> usize {
-    match list {
-        Cons::Nil => 0,
-        Cons::Some(_, next) => match &**next {
-            Object::Cons(rest) => list_length(&rest) + 1,
-            _ => 1,
-        },
-    }
-}
-
 fn join_two_lists_obj(
     first_obj: Rc<Object>,
     second_obj: Rc<Object>,
@@ -309,7 +299,7 @@ pub fn ensure_n_args(func_name: &str, n: usize, list: &Cons) -> Option<Error> {
         });
     }
 
-    let length = list_length(list);
+    let length = list.len();
     if length != n {
         return Some(Error {
             message: format!(

@@ -92,3 +92,15 @@ impl FromStr for Symbol {
         }
     }
 }
+
+impl Cons {
+    pub fn len(&self) -> usize {
+        match self {
+            Cons::Nil => 0,
+            Cons::Some(_, next) => match &**next {
+                Object::Cons(rest) => rest.len() + 1,
+                _ => 1,
+            },
+        }
+    }
+}
