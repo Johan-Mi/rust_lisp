@@ -1,7 +1,6 @@
 mod functions;
 mod lexer;
 mod parser;
-mod to_string;
 mod types;
 mod wrapped;
 use functions::*;
