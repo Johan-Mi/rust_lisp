@@ -18,6 +18,30 @@ impl Cons {
             },
         }
     }
+
+    pub fn car(&self) -> Rc<Object> {
+        match self {
+            Cons::Some(first, _) => first.clone(),
+            Cons::Nil => Rc::new(Object::Cons(Cons::Nil)),
+        }
+    }
+
+    pub fn cdr(&self) -> Rc<Object> {
+        match self {
+            Cons::Some(_, second) => second.clone(),
+            Cons::Nil => Rc::new(Object::Cons(Cons::Nil)),
+        }
+    }
+
+    pub fn is_proper_list(&self) -> bool {
+        match self {
+            Cons::Nil => true,
+            Cons::Some(_, next) => match &**next {
+                Object::Cons(rest) => rest.is_proper_list(),
+                _ => false,
+            },
+        }
+    }
 }
 
 impl fmt::Display for Cons {

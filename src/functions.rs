@@ -6,17 +6,10 @@ pub fn car_obj(obj: Rc<Object>) -> Rc<Object> {
     match &*obj {
         Object::Error(_) => obj,
         Object::Cons(cons) => match cons {
-            Cons::Some(..) => car_cons(&cons),
+            Cons::Some(..) => cons.car(),
             Cons::Nil => obj, // We already have a nil, so let's reuse it
         },
         _ => Rc::new(Object::Error(make_type_error("car_obj", &[&*obj]))),
-    }
-}
-
-pub fn car_cons(obj: &Cons) -> Rc<Object> {
-    match &*obj {
-        Cons::Some(first, _) => first.clone(),
-        Cons::Nil => Rc::new(Object::Cons(Cons::Nil)),
     }
 }
 
@@ -24,17 +17,10 @@ pub fn cdr_obj(obj: Rc<Object>) -> Rc<Object> {
     match &*obj {
         Object::Error(_) => obj,
         Object::Cons(cons) => match cons {
-            Cons::Some(..) => cdr_cons(&cons),
+            Cons::Some(..) => cons.cdr(),
             Cons::Nil => obj, // We already have a nil, so let's reuse it
         },
         _ => Rc::new(Object::Error(make_type_error("cdr_obj", &[&*obj]))),
-    }
-}
-
-pub fn cdr_cons(obj: &Cons) -> Rc<Object> {
-    match &*obj {
-        Cons::Some(_, second) => second.clone(),
-        Cons::Nil => Rc::new(Object::Cons(Cons::Nil)),
     }
 }
 
@@ -99,7 +85,7 @@ fn join_two_lists_obj(
     }
 }
 
-fn join_two_lists_cons(first: &Cons, second: &Cons, last: &Cons) -> Cons {
+pub fn join_two_lists_cons(first: &Cons, second: &Cons, last: &Cons) -> Cons {
     match (first, second) {
         (
             Cons::Some(first_car, first_cdr),
@@ -127,20 +113,20 @@ pub fn eval_list_elements(list: &Cons, env: &Cons) -> (Cons, Cons) {
                 let (evaluated_first, env) = eval_obj(first.clone(), env);
                 let (evaluated_rest, env) = eval_list_elements(rest, &env);
                 (
-                    Cons::Some {
-                        0: evaluated_first,
-                        1: Rc::<Object>::new(Object::Cons(evaluated_rest)),
-                    },
+                    Cons::Some(
+                        evaluated_first,
+                        Rc::<Object>::new(Object::Cons(evaluated_rest)),
+                    ),
                     env,
                 )
             }
             _ => {
                 let (evaluated_first, env) = eval_obj(first.clone(), env);
                 (
-                    Cons::Some {
-                        0: evaluated_first,
-                        1: Rc::new(Object::Cons(Cons::Nil)),
-                    },
+                    Cons::Some(
+                        evaluated_first,
+                        Rc::new(Object::Cons(Cons::Nil)),
+                    ),
                     env,
                 )
             }
@@ -155,35 +141,13 @@ fn apply_obj(
 ) -> (Rc<Object>, Cons) {
     match &*func_obj {
         Object::Error(_) => (func_obj, env.clone()),
-        Object::Function(func) => apply_function(&func, args, env),
-        Object::BuiltinFunction(func) => {
-            apply_builtin_function(&func, args, env)
-        }
+        Object::Function(func) => func.apply(args, env),
+        Object::BuiltinFunction(func) => func.apply(args, env),
         _ => (
             Rc::new(Object::Error(make_type_error("apply_obj", &[&*func_obj]))),
             env.clone(),
         ),
     }
-}
-
-fn apply_builtin_function(
-    func: &BuiltinFunction,
-    args: &Cons,
-    env: &Cons,
-) -> (Rc<Object>, Cons) {
-    (func.func)(args, env)
-}
-
-fn apply_function(
-    func: &Function,
-    args: &Cons,
-    env: &Cons,
-) -> (Rc<Object>, Cons) {
-    let (calling_args, env) = eval_list_elements(args, env);
-    eval_obj(
-        func.body.clone(),
-        &join_two_lists_cons(&func.parameters, &calling_args, &env),
-    )
 }
 
 pub fn eval_obj(obj: Rc<Object>, env: &Cons) -> (Rc<Object>, Cons) {
@@ -203,15 +167,15 @@ pub fn eval_obj(obj: Rc<Object>, env: &Cons) -> (Rc<Object>, Cons) {
 }
 
 fn eval_cons(list: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
-    match &*cdr_cons(list) {
+    match &*list.cdr() {
         Object::Cons(args) => {
-            let (func, env) = eval_obj(car_cons(list), env);
+            let (func, env) = eval_obj(list.car(), env);
             apply_obj(func, &args, &env)
         }
         _ => (
             Rc::new(Object::Error(Error {
                 message: String::from(
-                    "car of argument passed to eval_cons must be a cons",
+                    "cdr of argument passed to eval_cons must be a cons",
                 ),
             })),
             env.clone(),
@@ -255,19 +219,6 @@ macro_rules! make_list {
     };
 }
 
-fn name_of_contained(obj: &Object) -> &str {
-    match obj {
-        Object::Integer(_) => "(type int)",
-        Object::Symbol(_) => "(type symbol)",
-        Object::Error(_) => "(type error)",
-        Object::Function(_) => "(type function)",
-        Object::BuiltinFunction(_) => "(type builtin-function)",
-        Object::Quote(_) => "(type quote)",
-        Object::Cons(_) => "(type cons)",
-        Object::Bool(_) => "(type bool)",
-    }
-}
-
 fn make_type_error(func_name: &str, args: &[&Object]) -> Error {
     Error {
         message: format!(
@@ -275,25 +226,15 @@ fn make_type_error(func_name: &str, args: &[&Object]) -> Error {
             func_name,
             args.iter()
                 .copied()
-                .map(name_of_contained)
+                .map(Object::name_of_contained)
                 .intersperse(" ")
                 .collect::<String>()
         ),
     }
 }
 
-fn is_proper_list(list: &Cons) -> bool {
-    match list {
-        Cons::Nil => true,
-        Cons::Some(_, next) => match &**next {
-            Object::Cons(rest) => is_proper_list(&rest),
-            _ => false,
-        },
-    }
-}
-
 pub fn ensure_n_args(func_name: &str, n: usize, list: &Cons) -> Option<Error> {
-    if !is_proper_list(list) {
+    if !list.is_proper_list() {
         return Some(Error {
             message: format!("Call to {} must be a proper list", func_name),
         });

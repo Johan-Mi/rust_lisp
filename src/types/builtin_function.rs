@@ -12,3 +12,9 @@ impl fmt::Display for BuiltinFunction {
         write!(formatter, "Builtin function")
     }
 }
+
+impl BuiltinFunction {
+    pub fn apply(&self, args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
+        (self.func)(args, env)
+    }
+}

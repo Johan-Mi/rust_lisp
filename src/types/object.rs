@@ -33,3 +33,18 @@ impl fmt::Display for Object {
         }
     }
 }
+
+impl Object {
+    pub fn name_of_contained(&self) -> &str {
+        match self {
+            Object::Integer(_) => "(type int)",
+            Object::Symbol(_) => "(type symbol)",
+            Object::Error(_) => "(type error)",
+            Object::Function(_) => "(type function)",
+            Object::BuiltinFunction(_) => "(type builtin-function)",
+            Object::Quote(_) => "(type quote)",
+            Object::Cons(_) => "(type cons)",
+            Object::Bool(_) => "(type bool)",
+        }
+    }
+}
