@@ -1,4 +1,8 @@
+use super::cons::*;
+use super::error::*;
+use super::object::*;
 use std::fmt;
+use std::rc::Rc;
 use std::str::FromStr;
 
 #[derive(Clone, PartialEq)]
@@ -45,5 +49,32 @@ impl FromStr for Symbol {
 impl fmt::Display for Symbol {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         write!(formatter, "{}", self.name)
+    }
+}
+
+impl Symbol {
+    pub fn eval(&self, env: &Cons) -> (Rc<Object>, Cons) {
+        fn eval_symbol_internal(symbol: &Symbol, env: &Cons) -> Rc<Object> {
+            match env {
+                Cons::Nil => Rc::new(Object::Error(Error {
+                    message: format!("Unbound variable {}", symbol),
+                })),
+                Cons::Some(first, rest) => match &*car_obj(first.clone()) {
+                    Object::Symbol(found_symbol) if symbol == found_symbol => {
+                        cdr_obj(first.clone())
+                    }
+                    _ => match &**rest {
+                        Object::Cons(next_cons) => {
+                            eval_symbol_internal(symbol, &next_cons)
+                        }
+                        _ => Rc::new(Object::Error(Error {
+                            message: format!("Unbound variable {}", symbol),
+                        })),
+                    },
+                },
+            }
+        }
+
+        (eval_symbol_internal(self, env), env.clone())
     }
 }

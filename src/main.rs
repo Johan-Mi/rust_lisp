@@ -3,7 +3,6 @@ mod lexer;
 mod parser;
 mod types;
 mod wrapped;
-use functions::*;
 use lexer::*;
 use parser::*;
 use std::fs;
