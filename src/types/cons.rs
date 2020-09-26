@@ -3,6 +3,10 @@ use super::object::*;
 use std::fmt;
 use std::rc::Rc;
 
+/// The `Cons` cell either contains pointers to two `Object`s, or nothing
+/// (`Nil`). It's one of the simplest persistent data structures, but very
+/// versatile. Multiple `Cons`es can for example be connected into a linked list
+/// or a tree.
 #[derive(Clone)]
 pub enum Cons {
     Some(Rc<Object>, Rc<Object>),
@@ -10,6 +14,7 @@ pub enum Cons {
 }
 
 impl Cons {
+    /// Returns the length of the linked list that `self` is the beginning of.
     pub fn len(&self) -> usize {
         match self {
             Cons::Nil => 0,
@@ -20,6 +25,26 @@ impl Cons {
         }
     }
 
+    /// Returns the first element of `self`, or `Nil` if `self` is `Nil`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let one = Rc::new(Object::Integer(Integer { value: 1 }));
+    /// let two = Rc::new(Object::Integer(Integer { value: 2 }));
+    ///
+    /// let a = Cons::Some(one, two);
+    ///
+    /// assert_eq!(a.car(), one);
+    /// ```
+    ///
+    /// ```
+    /// let nil = Rc::new(Object::Cons(Cons::Nil));
+    ///
+    /// let a = Cons::Nil;
+    ///
+    /// assert_eq!(a.car(), nil);
+    /// ```
     pub fn car(&self) -> Rc<Object> {
         match self {
             Cons::Some(first, _) => first.clone(),
@@ -27,6 +52,26 @@ impl Cons {
         }
     }
 
+    /// Returns the second element of `self`, or `Nil` if `self` is `Nil`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let one = Rc::new(Object::Integer(Integer { value: 1 }));
+    /// let two = Rc::new(Object::Integer(Integer { value: 2 }));
+    ///
+    /// let a = Cons::Some(one, two);
+    ///
+    /// assert_eq!(a.cdr(), two);
+    /// ```
+    ///
+    /// ```
+    /// let nil = Rc::new(Object::Cons(Cons::Nil));
+    ///
+    /// let a = Cons::Nil;
+    ///
+    /// assert_eq!(a.cdr(), nil);
+    /// ```
     pub fn cdr(&self) -> Rc<Object> {
         match self {
             Cons::Some(_, second) => second.clone(),
@@ -34,6 +79,8 @@ impl Cons {
         }
     }
 
+    /// Checks if `self` is a linked list. `self` is a linked list if it's `Nil`
+    /// or if its `cdr` is a linked list.
     pub fn is_proper_list(&self) -> bool {
         match self {
             Cons::Nil => true,
@@ -44,6 +91,8 @@ impl Cons {
         }
     }
 
+    /// Evaluates `self` with variables from `env`. This returns the result of
+    /// calling `self.car()` with arguments from `self.cdr()`
     pub fn eval(&self, env: &Cons) -> (Rc<Object>, Cons) {
         match &*self.cdr() {
             Object::Cons(args) => {

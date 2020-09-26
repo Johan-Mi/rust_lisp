@@ -1,6 +1,8 @@
 use std::fmt;
 
+/// A wrapper around a boolean.
 pub struct Bool {
+    /// The boolean value contained.
     pub value: bool,
 }
 

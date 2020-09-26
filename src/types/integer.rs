@@ -2,7 +2,9 @@ use std::fmt;
 use std::num::ParseIntError;
 use std::str::FromStr;
 
+/// A wrapper around an integer.
 pub struct Integer {
+    /// The integer value contained.
     pub value: i32,
 }
 
