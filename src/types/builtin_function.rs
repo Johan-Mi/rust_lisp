@@ -4,7 +4,7 @@ use std::fmt;
 use std::rc::Rc;
 
 pub struct BuiltinFunction {
-    pub func: fn(&Cons, &Cons) -> (Rc<Object>, Cons),
+    pub func: fn(args: &Cons, env: &Cons) -> (Rc<Object>, Cons),
 }
 
 impl fmt::Display for BuiltinFunction {

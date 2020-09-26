@@ -21,6 +21,15 @@ simple_wrap_1!(wrapped_cdr, cdr_obj);
 simple_wrap_1!(wrapped_not, not);
 simple_wrap_1!(wrapped_int_to_bool, int_to_bool);
 simple_wrap_1!(wrapped_bool_to_int, bool_to_int);
+simple_wrap_1!(wrapped_is_nil, |obj: Rc<_>| Rc::new(Object::Bool(Bool {
+    value: matches!(&*obj, Object::Cons(Cons::Nil))
+})));
+simple_wrap_1!(wrapped_is_int, |obj: Rc<_>| Rc::new(Object::Bool(Bool {
+    value: matches!(&*obj, Object::Integer(_))
+})));
+simple_wrap_1!(wrapped_is_bool, |obj: Rc<_>| Rc::new(Object::Bool(Bool {
+    value: matches!(&*obj, Object::Bool(_))
+})));
 
 pub fn wrapped_quote(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
     match ensure_n_args("wrapped_quote", 1, args) {

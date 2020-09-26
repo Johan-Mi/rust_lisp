@@ -46,3 +46,13 @@
 (* a 5)
 (define b (* a 2))
 (- b a)
+
+(nil? ())
+(nil? '(1 2 3))
+(nil? 0)
+
+(int? 1)
+(int? true)
+
+(bool? false)
+(bool? 1)
