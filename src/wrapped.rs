@@ -251,3 +251,17 @@ pub fn wrapped_define(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
         },
     }
 }
+
+pub fn wrapped_if(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
+    match ensure_n_args("wrapped_if", 3, args) {
+        Some(err) => (Rc::new(Object::Error(err)), env.clone()),
+        _ => {
+            let (condition, env) = eval_obj(args.car(), env);
+            if is_truthy(condition) {
+                eval_obj(car_obj(args.cdr()), &env)
+            } else {
+                eval_obj(car_obj(cdr_obj(args.cdr())), &env)
+            }
+        }
+    }
+}

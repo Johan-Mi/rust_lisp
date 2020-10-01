@@ -50,6 +50,7 @@ fn main() {
         "nil?" = make_builtin_function!(wrapped_is_nil),
         "int?" = make_builtin_function!(wrapped_is_int),
         "bool?" = make_builtin_function!(wrapped_is_bool),
+        "if" = make_builtin_function!(wrapped_if),
         "true" = Rc::new(Object::Bool(Bool { value: true })),
         "false" = Rc::new(Object::Bool(Bool { value: false }))
     ];
