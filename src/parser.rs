@@ -3,20 +3,18 @@ use super::types::*;
 use std::rc::Rc;
 
 fn parse_integer(tokens: &[Token]) -> Option<(Integer, &[Token])> {
-    let first_token = tokens.first()?;
-    if let Token::Ident(num_str) = first_token {
+    if let Some(Token::Ident(num_str)) = tokens.first() {
         let num = num_str.parse().ok()?;
-        Some((num, tokens.get(1..).unwrap()))
+        Some((num, tokens.get(1..)?))
     } else {
         None
     }
 }
 
 fn parse_symbol(tokens: &[Token]) -> Option<(Symbol, &[Token])> {
-    let first_token = tokens.first()?;
-    if let Token::Ident(symbol_str) = first_token {
+    if let Some(Token::Ident(symbol_str)) = tokens.first() {
         let symbol = symbol_str.parse().ok()?;
-        Some((symbol, tokens.get(1..).unwrap()))
+        Some((symbol, tokens.get(1..)?))
     } else {
         None
     }
@@ -24,31 +22,29 @@ fn parse_symbol(tokens: &[Token]) -> Option<(Symbol, &[Token])> {
 
 fn parse_lparen(tokens: &[Token]) -> Option<&[Token]> {
     match tokens.first() {
-        Some(first_token) if first_token == &Token::LParen => tokens.get(1..),
+        Some(Token::LParen) => tokens.get(1..),
         _ => None,
     }
 }
 
 fn parse_rparen(tokens: &[Token]) -> Option<&[Token]> {
     match tokens.first() {
-        Some(first_token) if first_token == &Token::RParen => tokens.get(1..),
+        Some(Token::RParen) => tokens.get(1..),
         _ => None,
     }
 }
 
 fn parse_quote(tokens: &[Token]) -> Option<&[Token]> {
     match tokens.first() {
-        Some(first_token) if first_token == &Token::Quote => tokens.get(1..),
+        Some(Token::Quote) => tokens.get(1..),
         _ => None,
     }
 }
 
 fn parse_dot(tokens: &[Token]) -> Option<&[Token]> {
-    let first_token = tokens.first()?;
-    if first_token == &Token::Ident(String::from(".")) {
-        tokens.get(1..)
-    } else {
-        None
+    match tokens.first() {
+        Some(Token::Ident(s)) if s == "." => tokens.get(1..),
+        _ => None,
     }
 }
 
@@ -60,29 +56,22 @@ fn parse_quoted_expression(tokens: &[Token]) -> Option<(Quote, &[Token])> {
 
 fn parse_cons(tokens: &[Token]) -> Option<(Cons, &[Token])> {
     fn parse_cons_helper(tokens: &[Token]) -> Option<(Cons, &[Token])> {
-        match parse_rparen(tokens) {
-            Some(unconsumed_tokens) => Some((Cons::Nil, unconsumed_tokens)),
-            _ => {
-                let (first_expr, remaining_tokens) = parse_expression(tokens)?;
-                match parse_dot(remaining_tokens) {
-                    Some(remaining_tokens) => {
-                        let (last_expr, remaining_tokens) =
-                            parse_expression(remaining_tokens)?;
-                        let unconsumed_tokens = parse_rparen(remaining_tokens)?;
-                        Some((
-                            Cons::Some(first_expr, last_expr),
-                            unconsumed_tokens,
-                        ))
-                    }
-                    _ => {
-                        let (rest, remaining_tokens) =
-                            parse_cons_helper(remaining_tokens)?;
-                        Some((
-                            Cons::Some(first_expr, Rc::new(Object::Cons(rest))),
-                            remaining_tokens,
-                        ))
-                    }
-                }
+        if let Some(unconsumed_tokens) = parse_rparen(tokens) {
+            Some((Cons::Nil, unconsumed_tokens))
+        } else {
+            let (first_expr, remaining_tokens) = parse_expression(tokens)?;
+            if let Some(remaining_tokens) = parse_dot(remaining_tokens) {
+                let (last_expr, remaining_tokens) =
+                    parse_expression(remaining_tokens)?;
+                let unconsumed_tokens = parse_rparen(remaining_tokens)?;
+                Some((Cons::Some(first_expr, last_expr), unconsumed_tokens))
+            } else {
+                let (rest, remaining_tokens) =
+                    parse_cons_helper(remaining_tokens)?;
+                Some((
+                    Cons::Some(first_expr, Rc::new(Object::Cons(rest))),
+                    remaining_tokens,
+                ))
             }
         }
     }

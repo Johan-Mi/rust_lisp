@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 itertools = "0.9.0"
+derive_more = "0.99"
 
 [profile.release]
 lto = true

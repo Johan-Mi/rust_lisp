@@ -7,9 +7,10 @@ use super::integer::*;
 use super::quote::*;
 use super::symbol::*;
 use crate::functions::*;
-use std::fmt;
+use derive_more::Display;
 use std::rc::Rc;
 
+#[derive(Display)]
 pub enum Object {
     Integer(Integer),
     Symbol(Symbol),
@@ -19,21 +20,6 @@ pub enum Object {
     Quote(Quote),
     Cons(Cons),
     Bool(Bool),
-}
-
-impl fmt::Display for Object {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Object::Integer(contained) => contained.fmt(formatter),
-            Object::Symbol(contained) => contained.fmt(formatter),
-            Object::Error(contained) => contained.fmt(formatter),
-            Object::Function(contained) => contained.fmt(formatter),
-            Object::BuiltinFunction(contained) => contained.fmt(formatter),
-            Object::Quote(contained) => contained.fmt(formatter),
-            Object::Cons(contained) => contained.fmt(formatter),
-            Object::Bool(contained) => contained.fmt(formatter),
-        }
-    }
 }
 
 impl Object {

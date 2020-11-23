@@ -16,20 +16,28 @@ impl FromStr for Symbol {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         fn char_is_symbol_initial(c: char) -> bool {
             c.is_alphabetic()
-                || match c {
-                    '!' | '$' | '%' | '&' | '*' | '/' | ':' | '<' | '='
-                    | '>' | '?' | '^' | '_' | '~' => true,
-                    _ => false,
-                }
+                || matches!(
+                    c,
+                    '!' | '$'
+                        | '%'
+                        | '&'
+                        | '*'
+                        | '/'
+                        | ':'
+                        | '<'
+                        | '='
+                        | '>'
+                        | '?'
+                        | '^'
+                        | '_'
+                        | '~'
+                )
         }
 
         fn char_is_symbol_subsequent(c: char) -> bool {
             char_is_symbol_initial(c)
                 || c.is_digit(10)
-                || match c {
-                    '+' | '.' | '@' | '-' => true,
-                    _ => false,
-                }
+                || matches!(c, '+' | '.' | '@' | '-')
         }
 
         if s == "+" || s == "-" || s == "..." || {

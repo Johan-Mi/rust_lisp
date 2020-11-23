@@ -7,9 +7,7 @@ pub fn add(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
         (Object::Error(_), _) => lhs_obj,
         (_, Object::Error(_)) => rhs_obj,
         (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Rc::new(Object::Integer(Integer {
-                value: lhs.value + rhs.value,
-            }))
+            Rc::new(Object::Integer(*lhs + *rhs))
         }
         _ => Rc::new(Object::Error(make_type_error(
             "add",
@@ -23,9 +21,7 @@ pub fn sub(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
         (Object::Error(_), _) => lhs_obj,
         (_, Object::Error(_)) => rhs_obj,
         (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Rc::new(Object::Integer(Integer {
-                value: lhs.value - rhs.value,
-            }))
+            Rc::new(Object::Integer(*lhs - *rhs))
         }
         _ => Rc::new(Object::Error(make_type_error(
             "sub",
@@ -39,9 +35,7 @@ pub fn mul(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
         (Object::Error(_), _) => lhs_obj,
         (_, Object::Error(_)) => rhs_obj,
         (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Rc::new(Object::Integer(Integer {
-                value: lhs.value * rhs.value,
-            }))
+            Rc::new(Object::Integer((**lhs * **rhs).into()))
         }
         _ => Rc::new(Object::Error(make_type_error(
             "mul",
@@ -159,25 +153,21 @@ pub fn ensure_n_args(func_name: &str, n: usize, list: &Cons) -> Option<Error> {
 
 pub fn int_to_bool(obj: Rc<Object>) -> Rc<Object> {
     match &*obj {
-        Object::Integer(val) => Rc::new(Object::Bool(Bool {
-            value: val.value != 0,
-        })),
+        Object::Integer(val) => Rc::new(Object::Bool((**val != 0).into())),
         _ => Rc::new(Object::Error(make_type_error("int_to_bool", &[&*obj]))),
     }
 }
 
 pub fn bool_to_int(obj: Rc<Object>) -> Rc<Object> {
     match &*obj {
-        Object::Bool(val) => Rc::new(Object::Integer(Integer {
-            value: val.value as i32,
-        })),
+        Object::Bool(val) => Rc::new(Object::Integer((**val as i32).into())),
         _ => Rc::new(Object::Error(make_type_error("bool_to_int", &[&*obj]))),
     }
 }
 
 pub fn is_truthy(obj: Rc<Object>) -> bool {
     match &*obj {
-        Object::Bool(b) => b.value,
+        Object::Bool(b) => **b,
         _ => true,
     }
 }
@@ -185,8 +175,6 @@ pub fn is_truthy(obj: Rc<Object>) -> bool {
 pub fn not(obj: Rc<Object>) -> Rc<Object> {
     match &*obj {
         Object::Error(_) => obj,
-        _ => Rc::new(Object::Bool(Bool {
-            value: !is_truthy(obj),
-        })),
+        _ => Rc::new(Object::Bool((!is_truthy(obj)).into())),
     }
 }
