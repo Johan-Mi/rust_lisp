@@ -1,13 +1,9 @@
 use super::object::*;
-use std::fmt;
+use derive_more::Display;
 use std::rc::Rc;
 
+#[derive(Display)]
+#[display(fmt = "(quote {})", contained)]
 pub struct Quote {
     pub contained: Rc<Object>,
-}
-
-impl fmt::Display for Quote {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        write!(formatter, "(quote {})", self.contained)
-    }
 }

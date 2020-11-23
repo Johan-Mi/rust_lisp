@@ -1,11 +1,11 @@
 use super::cons::*;
 use super::error::*;
 use super::object::*;
-use std::fmt;
+use derive_more::Display;
 use std::rc::Rc;
 use std::str::FromStr;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Display)]
 pub struct Symbol {
     pub name: String,
 }
@@ -51,12 +51,6 @@ impl FromStr for Symbol {
         } else {
             Err(())
         }
-    }
-}
-
-impl fmt::Display for Symbol {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        write!(formatter, "{}", self.name)
     }
 }
 

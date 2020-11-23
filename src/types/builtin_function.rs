@@ -1,16 +1,12 @@
 use super::cons::*;
 use super::object::*;
-use std::fmt;
+use derive_more::Display;
 use std::rc::Rc;
 
+#[derive(Display)]
+#[display(fmt = "Builtin function")]
 pub struct BuiltinFunction {
     pub func: fn(args: &Cons, env: &Cons) -> (Rc<Object>, Cons),
-}
-
-impl fmt::Display for BuiltinFunction {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        write!(formatter, "Builtin function")
-    }
 }
 
 impl BuiltinFunction {

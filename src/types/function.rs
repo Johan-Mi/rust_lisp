@@ -1,18 +1,14 @@
 use super::cons::*;
 use super::object::*;
 use crate::functions::*;
-use std::fmt;
+use derive_more::Display;
 use std::rc::Rc;
 
+#[derive(Display)]
+#[display(fmt = "Function {} => {}", parameters, body)]
 pub struct Function {
     pub parameters: Cons,
     pub body: Rc<Object>,
-}
-
-impl fmt::Display for Function {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        write!(formatter, "Function {} => {}", self.parameters, self.body)
-    }
 }
 
 impl Function {
