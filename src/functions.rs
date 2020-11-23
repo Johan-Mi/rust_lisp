@@ -118,34 +118,31 @@ macro_rules! make_list {
 }
 
 pub fn make_type_error(func_name: &str, args: &[&Object]) -> Error {
-    Error {
-        message: format!(
-            "{} is not callable with types ({})",
-            func_name,
-            args.iter()
-                .copied()
-                .map(Object::name_of_contained)
-                .intersperse(" ")
-                .collect::<String>()
-        ),
-    }
+    Error::new(format!(
+        "{} is not callable with types ({})",
+        func_name,
+        args.iter()
+            .copied()
+            .map(Object::name_of_contained)
+            .intersperse(" ")
+            .collect::<String>()
+    ))
 }
 
 pub fn ensure_n_args(func_name: &str, n: usize, list: &Cons) -> Option<Error> {
     if !list.is_proper_list() {
-        return Some(Error {
-            message: format!("Call to {} must be a proper list", func_name),
-        });
+        return Some(Error::new(format!(
+            "Call to {} must be a proper list",
+            func_name
+        )));
     }
 
     let length = list.len();
     if length != n {
-        return Some(Error {
-            message: format!(
-                "{} expected {} arguments but got {}",
-                func_name, n, length
-            ),
-        });
+        return Some(Error::new(format!(
+            "{} expected {} arguments but got {}",
+            func_name, n, length
+        )));
     }
 
     None

@@ -51,11 +51,9 @@ impl Cons {
                 apply_obj(func, &args, &env)
             }
             _ => (
-                Rc::new(Object::Error(Error {
-                    message: String::from(
-                        "cdr of argument passed to eval_cons must be a cons",
-                    ),
-                })),
+                Rc::new(Object::Error(Error::new(String::from(
+                    "cdr of argument passed to eval_cons must be a cons",
+                )))),
                 env.clone(),
             ),
         }

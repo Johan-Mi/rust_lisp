@@ -63,11 +63,9 @@ pub fn wrapped_add(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
                 (add(lhs, rhs), env)
             }
             _ => (
-                Rc::new(Object::Error(Error {
-                    message: String::from(
-                        "Arguments passed to wrapped_add must be a proper list",
-                    ),
-                })),
+                Rc::new(Object::Error(Error::new(String::from(
+                    "Arguments passed to wrapped_add must be a proper list",
+                )))),
                 env.clone(),
             ),
         },
@@ -77,11 +75,9 @@ pub fn wrapped_add(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
 pub fn wrapped_sub(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
     match args.len() {
         0 => (
-            Rc::new(Object::Error(Error {
-                message: String::from(
-                    "wrapped_sub expected at least 1 argument but got 0",
-                ),
-            })),
+            Rc::new(Object::Error(Error::new(String::from(
+                "wrapped_sub expected at least 1 argument but got 0",
+            )))),
             env.clone(),
         ),
         1 => {
@@ -95,11 +91,9 @@ pub fn wrapped_sub(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
                 (sub(lhs, rhs), env)
             }
             _ => (
-                Rc::new(Object::Error(Error {
-                    message: String::from(
-                        "Arguments passed to wrapped_sub must be a proper list",
-                    ),
-                })),
+                Rc::new(Object::Error(Error::new(String::from(
+                    "Arguments passed to wrapped_sub must be a proper list",
+                )))),
                 env.clone(),
             ),
         },
@@ -116,11 +110,9 @@ pub fn wrapped_mul(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
                 (mul(lhs, rhs), env)
             }
             _ => (
-                Rc::new(Object::Error(Error {
-                    message: String::from(
-                        "Arguments passed to wrapped_mul must be a proper list",
-                    ),
-                })),
+                Rc::new(Object::Error(Error::new(String::from(
+                    "Arguments passed to wrapped_mul must be a proper list",
+                )))),
                 env.clone(),
             ),
         },
@@ -140,12 +132,10 @@ pub fn wrapped_lambda(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
                 env.clone(),
             ),
             _ => (
-                Rc::new(Object::Error(Error {
-                    message: String::from(
-                        "First argument of lambda definition must be a list \
+                Rc::new(Object::Error(Error::new(String::from(
+                    "First argument of lambda definition must be a list \
                             of parameters",
-                    ),
-                })),
+                )))),
                 env.clone(),
             ),
         },
@@ -170,11 +160,9 @@ pub fn wrapped_and(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
                 }
             }
             _ => (
-                Rc::new(Object::Error(Error {
-                    message: String::from(
-                        "Arguments passed to wrapped_and must be a proper list",
-                    ),
-                })),
+                Rc::new(Object::Error(Error::new(String::from(
+                    "Arguments passed to wrapped_and must be a proper list",
+                )))),
                 env.clone(),
             ),
         },
@@ -199,11 +187,9 @@ pub fn wrapped_or(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
                 }
             }
             _ => (
-                Rc::new(Object::Error(Error {
-                    message: String::from(
-                        "Arguments passed to wrapped_or must be a proper list",
-                    ),
-                })),
+                Rc::new(Object::Error(Error::new(String::from(
+                    "Arguments passed to wrapped_or must be a proper list",
+                )))),
                 env.clone(),
             ),
         },
@@ -232,11 +218,9 @@ pub fn wrapped_define(args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
                 }
             }
             _ => (
-                Rc::new(Object::Error(Error {
-                    message: String::from(
-                        "First argument passed to define must be a symbol",
-                    ),
-                })),
+                Rc::new(Object::Error(Error::new(String::from(
+                    "First argument passed to define must be a symbol",
+                )))),
                 env.clone(),
             ),
         },
