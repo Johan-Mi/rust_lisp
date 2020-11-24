@@ -55,14 +55,16 @@ impl FromStr for Symbol {
 }
 
 impl Symbol {
-    pub fn eval(&self, env: &Cons) -> (Rc<Object>, Cons) {
-        fn eval_symbol_internal(symbol: &Symbol, env: &Cons) -> Rc<Object> {
+    pub fn eval(&self, env: &Cons) -> Result<(Rc<Object>, Cons), Error> {
+        fn eval_symbol_internal(
+            symbol: &Symbol,
+            env: &Cons,
+        ) -> Result<Rc<Object>, Error> {
             match env {
-                Cons::Nil => Rc::new(Object::Error(Error::new(format!(
-                    "Unbound variable {}",
-                    symbol
-                )))),
-                Cons::Some(first, rest) => match &*car_obj(first.clone()) {
+                Cons::Nil => {
+                    Err(Error::new(format!("Unbound variable {}", symbol)))
+                }
+                Cons::Some(first, rest) => match &*car_obj(first.clone())? {
                     Object::Symbol(found_symbol) if symbol == found_symbol => {
                         cdr_obj(first.clone())
                     }
@@ -70,15 +72,15 @@ impl Symbol {
                         Object::Cons(next_cons) => {
                             eval_symbol_internal(symbol, &next_cons)
                         }
-                        _ => Rc::new(Object::Error(Error::new(format!(
+                        _ => Err(Error::new(format!(
                             "Unbound variable {}",
                             symbol
-                        )))),
+                        ))),
                     },
                 },
             }
         }
 
-        (eval_symbol_internal(self, env), env.clone())
+        Ok((eval_symbol_internal(self, env)?, env.clone()))
     }
 }

@@ -1,4 +1,5 @@
 use super::cons::*;
+use super::error::*;
 use super::object::*;
 use crate::functions::*;
 use derive_more::Display;
@@ -12,8 +13,12 @@ pub struct Function {
 }
 
 impl Function {
-    pub fn apply(&self, args: &Cons, env: &Cons) -> (Rc<Object>, Cons) {
-        let (calling_args, env) = eval_list_elements(args, env);
+    pub fn apply(
+        &self,
+        args: &Cons,
+        env: &Cons,
+    ) -> Result<(Rc<Object>, Cons), Error> {
+        let (calling_args, env) = eval_list_elements(args, env)?;
         eval_obj(
             self.body.clone(),
             &join_two_lists_cons(&self.parameters, &calling_args, &env),

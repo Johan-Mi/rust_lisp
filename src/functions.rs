@@ -2,45 +2,39 @@ use super::types::*;
 use itertools::Itertools;
 use std::rc::Rc;
 
-pub fn add(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
+pub fn add(
+    lhs_obj: Rc<Object>,
+    rhs_obj: Rc<Object>,
+) -> Result<Rc<Object>, Error> {
     match (&*lhs_obj, &*rhs_obj) {
-        (Object::Error(_), _) => lhs_obj,
-        (_, Object::Error(_)) => rhs_obj,
         (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Rc::new(Object::Integer(*lhs + *rhs))
+            Ok(Rc::new(Object::Integer(*lhs + *rhs)))
         }
-        _ => Rc::new(Object::Error(make_type_error(
-            "add",
-            &[&*lhs_obj, &*rhs_obj],
-        ))),
+        _ => Err(make_type_error("add", &[&*lhs_obj, &*rhs_obj])),
     }
 }
 
-pub fn sub(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
+pub fn sub(
+    lhs_obj: Rc<Object>,
+    rhs_obj: Rc<Object>,
+) -> Result<Rc<Object>, Error> {
     match (&*lhs_obj, &*rhs_obj) {
-        (Object::Error(_), _) => lhs_obj,
-        (_, Object::Error(_)) => rhs_obj,
         (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Rc::new(Object::Integer(*lhs - *rhs))
+            Ok(Rc::new(Object::Integer(*lhs - *rhs)))
         }
-        _ => Rc::new(Object::Error(make_type_error(
-            "sub",
-            &[&*lhs_obj, &*rhs_obj],
-        ))),
+        _ => Err(make_type_error("sub", &[&*lhs_obj, &*rhs_obj])),
     }
 }
 
-pub fn mul(lhs_obj: Rc<Object>, rhs_obj: Rc<Object>) -> Rc<Object> {
+pub fn mul(
+    lhs_obj: Rc<Object>,
+    rhs_obj: Rc<Object>,
+) -> Result<Rc<Object>, Error> {
     match (&*lhs_obj, &*rhs_obj) {
-        (Object::Error(_), _) => lhs_obj,
-        (_, Object::Error(_)) => rhs_obj,
         (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Rc::new(Object::Integer((**lhs * **rhs).into()))
+            Ok(Rc::new(Object::Integer((**lhs * **rhs).into())))
         }
-        _ => Rc::new(Object::Error(make_type_error(
-            "mul",
-            &[&*lhs_obj, &*rhs_obj],
-        ))),
+        _ => Err(make_type_error("mul", &[&*lhs_obj, &*rhs_obj])),
     }
 }
 
@@ -77,30 +71,33 @@ pub fn join_two_lists_cons(first: &Cons, second: &Cons, last: &Cons) -> Cons {
     }
 }
 
-pub fn eval_list_elements(list: &Cons, env: &Cons) -> (Cons, Cons) {
+pub fn eval_list_elements(
+    list: &Cons,
+    env: &Cons,
+) -> Result<(Cons, Cons), Error> {
     match list {
-        Cons::Nil => (list.clone(), env.clone()),
+        Cons::Nil => Ok((list.clone(), env.clone())),
         Cons::Some(first, second) => match &**second {
             Object::Cons(rest) => {
-                let (evaluated_first, env) = eval_obj(first.clone(), env);
-                let (evaluated_rest, env) = eval_list_elements(rest, &env);
-                (
+                let (evaluated_first, env) = eval_obj(first.clone(), env)?;
+                let (evaluated_rest, env) = eval_list_elements(rest, &env)?;
+                Ok((
                     Cons::Some(
                         evaluated_first,
                         Rc::<Object>::new(Object::Cons(evaluated_rest)),
                     ),
                     env,
-                )
+                ))
             }
             _ => {
-                let (evaluated_first, env) = eval_obj(first.clone(), env);
-                (
+                let (evaluated_first, env) = eval_obj(first.clone(), env)?;
+                Ok((
                     Cons::Some(
                         evaluated_first,
                         Rc::new(Object::Cons(Cons::Nil)),
                     ),
                     env,
-                )
+                ))
             }
         },
     }
@@ -148,17 +145,19 @@ pub fn ensure_n_args(func_name: &str, n: usize, list: &Cons) -> Option<Error> {
     None
 }
 
-pub fn int_to_bool(obj: Rc<Object>) -> Rc<Object> {
+pub fn int_to_bool(obj: Rc<Object>) -> Result<Rc<Object>, Error> {
     match &*obj {
-        Object::Integer(val) => Rc::new(Object::Bool((**val != 0).into())),
-        _ => Rc::new(Object::Error(make_type_error("int_to_bool", &[&*obj]))),
+        Object::Integer(val) => Ok(Rc::new(Object::Bool((**val != 0).into()))),
+        _ => Err(make_type_error("int_to_bool", &[&*obj])),
     }
 }
 
-pub fn bool_to_int(obj: Rc<Object>) -> Rc<Object> {
+pub fn bool_to_int(obj: Rc<Object>) -> Result<Rc<Object>, Error> {
     match &*obj {
-        Object::Bool(val) => Rc::new(Object::Integer((**val as i32).into())),
-        _ => Rc::new(Object::Error(make_type_error("bool_to_int", &[&*obj]))),
+        Object::Bool(val) => {
+            Ok(Rc::new(Object::Integer((**val as i32).into())))
+        }
+        _ => Err(make_type_error("bool_to_int", &[&*obj])),
     }
 }
 
@@ -170,8 +169,5 @@ pub fn is_truthy(obj: Rc<Object>) -> bool {
 }
 
 pub fn not(obj: Rc<Object>) -> Rc<Object> {
-    match &*obj {
-        Object::Error(_) => obj,
-        _ => Rc::new(Object::Bool((!is_truthy(obj)).into())),
-    }
+    Rc::new(Object::Bool((!is_truthy(obj)).into()))
 }

@@ -61,10 +61,16 @@ fn main() {
             match parse_expressions(&lexed) {
                 Some((exprs, _)) => {
                     for e in exprs {
-                        let (result, new_env) = eval_obj(e.clone(), &env);
-                        env = new_env;
                         println!("{}", e);
-                        println!("=> {}", result);
+                        match eval_obj(e, &env) {
+                            Ok((result, new_env)) => {
+                                env = new_env;
+                                println!("=> {}", result);
+                            }
+                            Err(err) => {
+                                println!("{}", err);
+                            }
+                        }
                     }
                 }
                 _ => {

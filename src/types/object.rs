@@ -14,7 +14,6 @@ use std::rc::Rc;
 pub enum Object {
     Integer(Integer),
     Symbol(Symbol),
-    Error(Error),
     Function(Function),
     BuiltinFunction(BuiltinFunction),
     Quote(Quote),
@@ -27,7 +26,6 @@ impl Object {
         match self {
             Object::Integer(_) => "(type int)",
             Object::Symbol(_) => "(type symbol)",
-            Object::Error(_) => "(type error)",
             Object::Function(_) => "(type function)",
             Object::BuiltinFunction(_) => "(type builtin-function)",
             Object::Quote(_) => "(type quote)",
@@ -37,25 +35,23 @@ impl Object {
     }
 }
 
-pub fn car_obj(obj: Rc<Object>) -> Rc<Object> {
+pub fn car_obj(obj: Rc<Object>) -> Result<Rc<Object>, Error> {
     match &*obj {
-        Object::Error(_) => obj,
         Object::Cons(cons) => match cons {
-            Cons::Some(..) => cons.car(),
-            Cons::Nil => obj, // We already have a nil, so let's reuse it
+            Cons::Some(..) => Ok(cons.car()),
+            Cons::Nil => Ok(obj), // We already have a nil, so let's reuse it
         },
-        _ => Rc::new(Object::Error(make_type_error("car_obj", &[&*obj]))),
+        _ => Err(make_type_error("car_obj", &[&*obj])),
     }
 }
 
-pub fn cdr_obj(obj: Rc<Object>) -> Rc<Object> {
+pub fn cdr_obj(obj: Rc<Object>) -> Result<Rc<Object>, Error> {
     match &*obj {
-        Object::Error(_) => obj,
         Object::Cons(cons) => match cons {
-            Cons::Some(..) => cons.cdr(),
-            Cons::Nil => obj, // We already have a nil, so let's reuse it
+            Cons::Some(..) => Ok(cons.cdr()),
+            Cons::Nil => Ok(obj), // We already have a nil, so let's reuse it
         },
-        _ => Rc::new(Object::Error(make_type_error("cdr_obj", &[&*obj]))),
+        _ => Err(make_type_error("cdr_obj", &[&*obj])),
     }
 }
 
@@ -63,30 +59,28 @@ pub fn apply_obj(
     func_obj: Rc<Object>,
     args: &Cons,
     env: &Cons,
-) -> (Rc<Object>, Cons) {
+) -> Result<(Rc<Object>, Cons), Error> {
     match &*func_obj {
-        Object::Error(_) => (func_obj, env.clone()),
         Object::Function(func) => func.apply(args, env),
         Object::BuiltinFunction(func) => func.apply(args, env),
-        _ => (
-            Rc::new(Object::Error(make_type_error("apply_obj", &[&*func_obj]))),
-            env.clone(),
-        ),
+        _ => Err(make_type_error("apply_obj", &[&*func_obj])),
     }
 }
 
-pub fn eval_obj(obj: Rc<Object>, env: &Cons) -> (Rc<Object>, Cons) {
+pub fn eval_obj(
+    obj: Rc<Object>,
+    env: &Cons,
+) -> Result<(Rc<Object>, Cons), Error> {
     match &*obj {
-        Object::Error(_)
-        | Object::Integer(_)
+        Object::Integer(_)
         | Object::Bool(_)
         | Object::Function(_)
-        | Object::BuiltinFunction(_) => (obj, env.clone()),
+        | Object::BuiltinFunction(_) => Ok((obj, env.clone())),
         Object::Cons(cons) => match cons {
-            Cons::Nil => (obj, env.clone()),
+            Cons::Nil => Ok((obj, env.clone())),
             _ => cons.eval(env),
         },
         Object::Symbol(symbol) => symbol.eval(env),
-        Object::Quote(quote) => (quote.contained.clone(), env.clone()),
+        Object::Quote(quote) => Ok((quote.contained.clone(), env.clone())),
     }
 }

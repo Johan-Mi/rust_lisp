@@ -44,18 +44,15 @@ impl Cons {
         }
     }
 
-    pub fn eval(&self, env: &Cons) -> (Rc<Object>, Cons) {
+    pub fn eval(&self, env: &Cons) -> Result<(Rc<Object>, Cons), Error> {
         match &*self.cdr() {
             Object::Cons(args) => {
-                let (func, env) = eval_obj(self.car(), env);
+                let (func, env) = eval_obj(self.car(), env)?;
                 apply_obj(func, &args, &env)
             }
-            _ => (
-                Rc::new(Object::Error(Error::new(String::from(
-                    "cdr of argument passed to eval_cons must be a cons",
-                )))),
-                env.clone(),
-            ),
+            _ => Err(Error::new(String::from(
+                "cdr of argument passed to eval_cons must be a cons",
+            ))),
         }
     }
 }
