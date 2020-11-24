@@ -27,7 +27,7 @@ macro_rules! make_env {
 
 macro_rules! make_builtin_function {
     ($func:expr) => {
-        Rc::new(Object::BuiltinFunction(BuiltinFunction { func: $func }))
+        Rc::new(Object::BuiltinFunction(BuiltinFunction::new($func)))
     };
 }
 
