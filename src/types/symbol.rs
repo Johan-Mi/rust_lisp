@@ -1,13 +1,13 @@
 use super::cons::*;
 use super::error::*;
 use super::object::*;
-use derive_more::Display;
+use derive_more::{Constructor, Display};
 use std::rc::Rc;
 use std::str::FromStr;
 
-#[derive(Clone, PartialEq, Display)]
+#[derive(Clone, PartialEq, Display, Constructor)]
 pub struct Symbol {
-    pub name: String,
+    name: String,
 }
 
 impl FromStr for Symbol {
@@ -45,9 +45,7 @@ impl FromStr for Symbol {
             char_is_symbol_initial(first_char)
                 && s.chars().skip(1).all(char_is_symbol_subsequent)
         } {
-            Ok(Symbol {
-                name: String::from(s),
-            })
+            Ok(Symbol::new(String::from(s)))
         } else {
             Err(())
         }

@@ -15,9 +15,9 @@ macro_rules! make_env {
         make_list![
         $(
             Rc::new(Object::Cons(Cons::Some(
-                Rc::new(Object::Symbol(Symbol {
-                    name: String::from($name),
-                })),
+                Rc::new(Object::Symbol(Symbol::new(
+                    String::from($name),
+                ))),
                 $value
             )))
         ),*
