@@ -12,3 +12,4 @@ derive_more = "0.99"
 
 [profile.release]
 lto = true
+panic = "abort"
