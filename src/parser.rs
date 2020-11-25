@@ -51,7 +51,12 @@ fn parse_dot(tokens: &[Token]) -> Option<&[Token]> {
 fn parse_quoted_expression(tokens: &[Token]) -> Option<(Quote, &[Token])> {
     let remaining_tokens = parse_quote(tokens)?;
     let (expr, unconsumed_tokens) = parse_expression(remaining_tokens)?;
-    Some((Quote { contained: expr }, unconsumed_tokens))
+    Some((
+        Quote {
+            contained: Rc::new(expr),
+        },
+        unconsumed_tokens,
+    ))
 }
 
 fn parse_cons(tokens: &[Token]) -> Option<(Cons, &[Token])> {
@@ -64,12 +69,18 @@ fn parse_cons(tokens: &[Token]) -> Option<(Cons, &[Token])> {
                 let (last_expr, remaining_tokens) =
                     parse_expression(remaining_tokens)?;
                 let unconsumed_tokens = parse_rparen(remaining_tokens)?;
-                Some((Cons::Some(first_expr, last_expr), unconsumed_tokens))
+                Some((
+                    Cons::Some(Rc::new(first_expr), Rc::new(last_expr)),
+                    unconsumed_tokens,
+                ))
             } else {
                 let (rest, remaining_tokens) =
                     parse_cons_helper(remaining_tokens)?;
                 Some((
-                    Cons::Some(first_expr, Rc::new(Object::Cons(rest))),
+                    Cons::Some(
+                        Rc::new(first_expr),
+                        Rc::new(Object::Cons(rest)),
+                    ),
                     remaining_tokens,
                 ))
             }
@@ -80,18 +91,18 @@ fn parse_cons(tokens: &[Token]) -> Option<(Cons, &[Token])> {
     parse_cons_helper(remaining_tokens)
 }
 
-pub fn parse_expression(tokens: &[Token]) -> Option<(Rc<Object>, &[Token])> {
+pub fn parse_expression(tokens: &[Token]) -> Option<(Object, &[Token])> {
     if let Some((expr, unconsumed_tokens)) = parse_cons(tokens) {
-        return Some((Rc::new(Object::Cons(expr)), unconsumed_tokens));
+        return Some((Object::Cons(expr), unconsumed_tokens));
     }
     if let Some((expr, unconsumed_tokens)) = parse_quoted_expression(tokens) {
-        return Some((Rc::new(Object::Quote(expr)), unconsumed_tokens));
+        return Some((Object::Quote(expr), unconsumed_tokens));
     }
     if let Some((expr, unconsumed_tokens)) = parse_integer(tokens) {
-        return Some((Rc::new(Object::Integer(expr)), unconsumed_tokens));
+        return Some((Object::Integer(expr), unconsumed_tokens));
     }
     if let Some((expr, unconsumed_tokens)) = parse_symbol(tokens) {
-        return Some((Rc::new(Object::Symbol(expr)), unconsumed_tokens));
+        return Some((Object::Symbol(expr), unconsumed_tokens));
     }
 
     None
@@ -99,7 +110,7 @@ pub fn parse_expression(tokens: &[Token]) -> Option<(Rc<Object>, &[Token])> {
 
 pub fn parse_expressions(
     mut tokens: &[Token],
-) -> Option<(Vec<Rc<Object>>, &[Token])> {
+) -> Option<(Vec<Object>, &[Token])> {
     let mut ret = Vec::new();
 
     while let Some((expr, remaining_tokens)) = parse_expression(tokens) {

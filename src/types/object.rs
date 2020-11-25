@@ -56,11 +56,11 @@ pub fn cdr_obj(obj: Rc<Object>) -> Result<Rc<Object>, Error> {
 }
 
 pub fn apply_obj(
-    func_obj: Rc<Object>,
+    func_obj: &Object,
     args: &Cons,
     env: &Cons,
 ) -> Result<(Rc<Object>, Cons), Error> {
-    match &*func_obj {
+    match func_obj {
         Object::Function(func) => func.apply(args, env),
         Object::BuiltinFunction(func) => func.apply(args, env),
         _ => Err(make_type_error("apply_obj", &[&*func_obj])),

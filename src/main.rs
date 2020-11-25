@@ -62,7 +62,7 @@ fn main() {
                 Some((exprs, _)) => {
                     for e in exprs {
                         println!("{}", e);
-                        match eval_obj(e, &env) {
+                        match eval_obj(Rc::new(e), &env) {
                             Ok((result, new_env)) => {
                                 env = new_env;
                                 println!("=> {}", result);

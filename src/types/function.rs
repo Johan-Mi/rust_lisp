@@ -2,14 +2,14 @@ use super::cons::*;
 use super::error::*;
 use super::object::*;
 use crate::functions::*;
-use derive_more::Display;
+use derive_more::{Constructor, Display};
 use std::rc::Rc;
 
-#[derive(Display)]
+#[derive(Display, Constructor)]
 #[display(fmt = "Function {} => {}", parameters, body)]
 pub struct Function {
-    pub parameters: Cons,
-    pub body: Rc<Object>,
+    parameters: Cons,
+    body: Rc<Object>,
 }
 
 impl Function {

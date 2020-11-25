@@ -131,10 +131,10 @@ pub fn wrapped_lambda(
     ensure_n_args("wrapped_lambda", 2, args)?;
     match &*args.car() {
         Object::Cons(param_list) => Ok((
-            Rc::new(Object::Function(Function {
-                parameters: param_list.clone(),
-                body: car_obj(args.cdr())?,
-            })),
+            Rc::new(Object::Function(Function::new(
+                param_list.clone(),
+                car_obj(args.cdr())?,
+            ))),
             env.clone(),
         )),
         _ => Err(Error::new(String::from(
