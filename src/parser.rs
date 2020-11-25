@@ -51,12 +51,7 @@ fn parse_dot(tokens: &[Token]) -> Option<&[Token]> {
 fn parse_quoted_expression(tokens: &[Token]) -> Option<(Quote, &[Token])> {
     let remaining_tokens = parse_quote(tokens)?;
     let (expr, unconsumed_tokens) = parse_expression(remaining_tokens)?;
-    Some((
-        Quote {
-            contained: Rc::new(expr),
-        },
-        unconsumed_tokens,
-    ))
+    Some((Quote::new(Rc::new(expr)), unconsumed_tokens))
 }
 
 fn parse_cons(tokens: &[Token]) -> Option<(Cons, &[Token])> {

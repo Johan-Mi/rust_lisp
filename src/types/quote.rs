@@ -1,9 +1,9 @@
 use super::object::*;
-use derive_more::Display;
+use derive_more::{Constructor, Deref, Display};
 use std::rc::Rc;
 
-#[derive(Display)]
+#[derive(Display, Constructor, Deref)]
 #[display(fmt = "(quote {})", contained)]
 pub struct Quote {
-    pub contained: Rc<Object>,
+    contained: Rc<Object>,
 }

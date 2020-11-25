@@ -81,6 +81,6 @@ pub fn eval_obj(
             _ => cons.eval(env),
         },
         Object::Symbol(symbol) => symbol.eval(env),
-        Object::Quote(quote) => Ok((quote.contained.clone(), env.clone())),
+        Object::Quote(quote) => Ok(((*quote).clone(), env.clone())),
     }
 }
