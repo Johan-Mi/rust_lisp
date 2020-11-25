@@ -2,28 +2,28 @@ use super::types::*;
 use itertools::Itertools;
 use std::rc::Rc;
 
-pub fn add(lhs_obj: &Object, rhs_obj: &Object) -> Result<Rc<Object>, Error> {
+pub fn add(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
     match (lhs_obj, rhs_obj) {
         (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Ok(Rc::new(Object::Integer(*lhs + *rhs)))
+            Ok(Object::Integer(*lhs + *rhs))
         }
         _ => Err(make_type_error("add", &[lhs_obj, rhs_obj])),
     }
 }
 
-pub fn sub(lhs_obj: &Object, rhs_obj: &Object) -> Result<Rc<Object>, Error> {
+pub fn sub(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
     match (lhs_obj, rhs_obj) {
         (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Ok(Rc::new(Object::Integer(*lhs - *rhs)))
+            Ok(Object::Integer(*lhs - *rhs))
         }
         _ => Err(make_type_error("sub", &[lhs_obj, rhs_obj])),
     }
 }
 
-pub fn mul(lhs_obj: &Object, rhs_obj: &Object) -> Result<Rc<Object>, Error> {
+pub fn mul(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
     match (lhs_obj, rhs_obj) {
         (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Ok(Rc::new(Object::Integer((**lhs * **rhs).into())))
+            Ok(Object::Integer((**lhs * **rhs).into()))
         }
         _ => Err(make_type_error("mul", &[lhs_obj, rhs_obj])),
     }

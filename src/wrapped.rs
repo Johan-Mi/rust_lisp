@@ -71,7 +71,7 @@ pub fn wrapped_add(
             Object::Cons(rest) => {
                 let (lhs, env) = eval_obj(car.clone(), env)?;
                 let (rhs, env) = wrapped_add(rest, &env)?;
-                Ok((add(&lhs, &rhs)?, env))
+                Ok((Rc::new(add(&lhs, &rhs)?), env))
             }
             _ => Err(Error::new(String::from(
                 "Arguments passed to wrapped_add must be a proper list",
@@ -90,13 +90,13 @@ pub fn wrapped_sub(
         ))),
         1 => {
             let (rhs, env) = eval_obj(args.car(), env)?;
-            Ok((sub(&Object::Integer(0.into()), &rhs)?, env))
+            Ok((Rc::new(sub(&Object::Integer(0.into()), &rhs)?), env))
         }
         _ => match &*args.cdr() {
             Object::Cons(rest) => {
                 let (lhs, env) = eval_obj(args.car(), env)?;
                 let (rhs, env) = wrapped_add(rest, &env)?;
-                Ok((sub(&lhs, &rhs)?, env))
+                Ok((Rc::new(sub(&lhs, &rhs)?), env))
             }
             _ => Err(Error::new(String::from(
                 "Arguments passed to wrapped_sub must be a proper list",
@@ -115,7 +115,7 @@ pub fn wrapped_mul(
             Object::Cons(rest) => {
                 let (lhs, env) = eval_obj(car.clone(), env)?;
                 let (rhs, env) = wrapped_mul(rest, &env)?;
-                Ok((mul(&lhs, &rhs)?, env))
+                Ok((Rc::new(mul(&lhs, &rhs)?), env))
             }
             _ => Err(Error::new(String::from(
                 "Arguments passed to wrapped_mul must be a proper list",
