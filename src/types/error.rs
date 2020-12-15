@@ -1,7 +1,8 @@
 use derive_more::{Constructor, Display};
+use std::borrow::Cow;
 
 #[derive(Display, Constructor)]
 #[display(fmt = "Error: {}", message)]
 pub struct Error {
-    message: String,
+    message: Cow<'static, str>,
 }

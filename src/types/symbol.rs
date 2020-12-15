@@ -59,9 +59,9 @@ impl Symbol {
             env: &Cons,
         ) -> Result<Rc<Object>, Error> {
             match env {
-                Cons::Nil => {
-                    Err(Error::new(format!("Unbound variable {}", symbol)))
-                }
+                Cons::Nil => Err(Error::new(
+                    format!("Unbound variable {}", symbol).into(),
+                )),
                 Cons::Some(first, rest) => match &*car_obj(first.clone())? {
                     Object::Symbol(found_symbol) if symbol == found_symbol => {
                         cdr_obj(first.clone())
@@ -70,10 +70,9 @@ impl Symbol {
                         Object::Cons(next_cons) => {
                             eval_symbol_internal(symbol, &next_cons)
                         }
-                        _ => Err(Error::new(format!(
-                            "Unbound variable {}",
-                            symbol
-                        ))),
+                        _ => Err(Error::new(
+                            format!("Unbound variable {}", symbol).into(),
+                        )),
                     },
                 },
             }

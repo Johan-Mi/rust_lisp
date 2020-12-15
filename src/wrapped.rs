@@ -73,9 +73,9 @@ pub fn wrapped_add(
                 let (rhs, env) = wrapped_add(rest, &env)?;
                 Ok((Rc::new(add(&lhs, &rhs)?), env))
             }
-            _ => Err(Error::new(String::from(
-                "Arguments passed to wrapped_add must be a proper list",
-            ))),
+            _ => Err(Error::new(
+                "Arguments passed to wrapped_add must be a proper list".into(),
+            )),
         },
     }
 }
@@ -85,9 +85,9 @@ pub fn wrapped_sub(
     env: &Cons,
 ) -> Result<(Rc<Object>, Cons), Error> {
     match args.len() {
-        0 => Err(Error::new(String::from(
-            "wrapped_sub expected at least 1 argument but got 0",
-        ))),
+        0 => Err(Error::new(
+            "wrapped_sub expected at least 1 argument but got 0".into(),
+        )),
         1 => {
             let (rhs, env) = eval_obj(args.car(), env)?;
             Ok((Rc::new(sub(&Object::Integer(0.into()), &rhs)?), env))
@@ -98,9 +98,9 @@ pub fn wrapped_sub(
                 let (rhs, env) = wrapped_add(rest, &env)?;
                 Ok((Rc::new(sub(&lhs, &rhs)?), env))
             }
-            _ => Err(Error::new(String::from(
-                "Arguments passed to wrapped_sub must be a proper list",
-            ))),
+            _ => Err(Error::new(
+                "Arguments passed to wrapped_sub must be a proper list".into(),
+            )),
         },
     }
 }
@@ -117,9 +117,9 @@ pub fn wrapped_mul(
                 let (rhs, env) = wrapped_mul(rest, &env)?;
                 Ok((Rc::new(mul(&lhs, &rhs)?), env))
             }
-            _ => Err(Error::new(String::from(
-                "Arguments passed to wrapped_mul must be a proper list",
-            ))),
+            _ => Err(Error::new(
+                "Arguments passed to wrapped_mul must be a proper list".into(),
+            )),
         },
     }
 }
@@ -137,10 +137,10 @@ pub fn wrapped_lambda(
             ))),
             env.clone(),
         )),
-        _ => Err(Error::new(String::from(
-            "First argument of lambda definition must be a list \
-                            of parameters",
-        ))),
+        _ => Err(Error::new(
+            "First argument of lambda definition must be a list of parameters"
+                .into(),
+        )),
     }
 }
 
@@ -159,9 +159,9 @@ pub fn wrapped_and(
                     Ok((lhs, env))
                 }
             }
-            _ => Err(Error::new(String::from(
-                "Arguments passed to wrapped_and must be a proper list",
-            ))),
+            _ => Err(Error::new(
+                "Arguments passed to wrapped_and must be a proper list".into(),
+            )),
         },
     }
 }
@@ -181,9 +181,9 @@ pub fn wrapped_or(
                     wrapped_or(rest, &env)
                 }
             }
-            _ => Err(Error::new(String::from(
-                "Arguments passed to wrapped_or must be a proper list",
-            ))),
+            _ => Err(Error::new(
+                "Arguments passed to wrapped_or must be a proper list".into(),
+            )),
         },
     }
 }
@@ -207,9 +207,9 @@ pub fn wrapped_define(
                 ),
             ))
         }
-        _ => Err(Error::new(String::from(
-            "First argument passed to define must be a symbol",
-        ))),
+        _ => Err(Error::new(
+            "First argument passed to define must be a symbol".into(),
+        )),
     }
 }
 
