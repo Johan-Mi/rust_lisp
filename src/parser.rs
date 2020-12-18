@@ -87,20 +87,17 @@ fn parse_cons(tokens: &[Token]) -> Option<(Cons, &[Token])> {
 }
 
 pub fn parse_expression(tokens: &[Token]) -> Option<(Object, &[Token])> {
-    if let Some((expr, unconsumed_tokens)) = parse_cons(tokens) {
-        return Some((Object::Cons(expr), unconsumed_tokens));
+    if let Some((expr, tokens)) = parse_cons(tokens) {
+        Some((Object::Cons(expr), tokens))
+    } else if let Some((expr, tokens)) = parse_quoted_expression(tokens) {
+        Some((Object::Quote(expr), tokens))
+    } else if let Some((expr, tokens)) = parse_integer(tokens) {
+        Some((Object::Integer(expr), tokens))
+    } else if let Some((expr, tokens)) = parse_symbol(tokens) {
+        Some((Object::Symbol(expr), tokens))
+    } else {
+        None
     }
-    if let Some((expr, unconsumed_tokens)) = parse_quoted_expression(tokens) {
-        return Some((Object::Quote(expr), unconsumed_tokens));
-    }
-    if let Some((expr, unconsumed_tokens)) = parse_integer(tokens) {
-        return Some((Object::Integer(expr), unconsumed_tokens));
-    }
-    if let Some((expr, unconsumed_tokens)) = parse_symbol(tokens) {
-        return Some((Object::Symbol(expr), unconsumed_tokens));
-    }
-
-    None
 }
 
 pub fn parse_expressions(
