@@ -110,9 +110,9 @@ pub fn parse_expressions(
         tokens = remaining_tokens;
     }
 
-    if ret.is_empty() {
-        None
-    } else {
+    if tokens.is_empty() {
         Some((ret, tokens))
+    } else {
+        None
     }
 }
