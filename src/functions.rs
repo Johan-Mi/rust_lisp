@@ -113,8 +113,7 @@ pub fn make_type_error(func_name: &str, args: &[&Object]) -> Error {
             args.iter()
                 .copied()
                 .map(Object::name_of_contained)
-                .intersperse(" ")
-                .collect::<String>()
+                .join(" ")
         )
         .into(),
     )
