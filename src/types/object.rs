@@ -1,12 +1,9 @@
-use super::boolean::*;
-use super::builtin_function::*;
-use super::cons::*;
-use super::error::*;
-use super::function::*;
-use super::integer::*;
-use super::quote::*;
-use super::symbol::*;
-use crate::functions::*;
+use crate::{
+    functions::make_type_error,
+    types::{
+        Bool, BuiltinFunction, Cons, Error, Function, Integer, Quote, Symbol,
+    },
+};
 use derive_more::Display;
 use std::rc::Rc;
 

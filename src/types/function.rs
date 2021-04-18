@@ -1,7 +1,7 @@
-use super::cons::*;
-use super::error::*;
-use super::object::*;
-use crate::functions::*;
+use crate::{
+    functions::{eval_list_elements, join_two_lists_cons},
+    types::{eval_obj, Cons, Error, Object},
+};
 use derive_more::{Constructor, Display};
 use std::rc::Rc;
 

@@ -1,7 +1,5 @@
-use super::error::*;
-use super::object::*;
-use std::fmt;
-use std::rc::Rc;
+use crate::types::{apply_obj, eval_obj, Error, Object};
+use std::{fmt, rc::Rc};
 
 #[derive(Clone)]
 pub enum Cons {

@@ -1,6 +1,4 @@
-use super::cons::*;
-use super::error::*;
-use super::object::*;
+use crate::types::{Cons, Error, Object};
 use derive_more::{Constructor, Display};
 use std::rc::Rc;
 

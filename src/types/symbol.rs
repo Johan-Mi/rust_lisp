@@ -1,9 +1,6 @@
-use super::cons::*;
-use super::error::*;
-use super::object::*;
+use crate::types::{car_obj, cdr_obj, Cons, Error, Object};
 use derive_more::{Constructor, Display};
-use std::rc::Rc;
-use std::str::FromStr;
+use std::{rc::Rc, str::FromStr};
 
 #[derive(Clone, PartialEq, Display, Constructor)]
 pub struct Symbol {

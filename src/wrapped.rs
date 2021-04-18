@@ -1,5 +1,4 @@
-use super::functions::*;
-use super::types::*;
+use crate::{functions::*, types::*};
 use std::rc::Rc;
 
 macro_rules! simple_wrap_mayfail {

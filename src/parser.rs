@@ -1,5 +1,7 @@
-use super::lexer::*;
-use super::types::*;
+use crate::{
+    lexer::Token,
+    types::{Cons, Integer, Object, Quote, Symbol},
+};
 use std::rc::Rc;
 
 fn parse_integer(tokens: &[Token]) -> Option<(Integer, &[Token])> {

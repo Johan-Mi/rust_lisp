@@ -3,11 +3,10 @@ mod lexer;
 mod parser;
 mod types;
 mod wrapped;
-use lexer::*;
-use parser::*;
-use std::fs;
-use std::rc::Rc;
-use types::*;
+use lexer::lex;
+use parser::parse_expressions;
+use std::{fs, rc::Rc};
+use types::{eval_obj, BuiltinFunction, Cons, Object, Symbol};
 use wrapped::*;
 
 macro_rules! make_env {
