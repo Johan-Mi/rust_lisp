@@ -1,4 +1,4 @@
-use crate::types::{car_obj, cdr_obj, Cons, Error, Object};
+use crate::types::{Cons, Error, Object};
 use derive_more::{Constructor, Display};
 use std::{rc::Rc, str::FromStr};
 
@@ -59,9 +59,9 @@ impl Symbol {
                 Cons::Nil => Err(Error::new(
                     format!("Unbound variable {}", symbol).into(),
                 )),
-                Cons::Some(first, rest) => match &*car_obj(first.clone())? {
+                Cons::Some(first, rest) => match &*first.clone().car()? {
                     Object::Symbol(found_symbol) if symbol == found_symbol => {
-                        cdr_obj(first.clone())
+                        first.clone().cdr()
                     }
                     _ => match &**rest {
                         Object::Cons(next_cons) => {

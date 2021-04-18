@@ -70,7 +70,7 @@ pub fn eval_list_elements(
         Cons::Nil => Ok((list.clone(), env.clone())),
         Cons::Some(first, second) => match &**second {
             Object::Cons(rest) => {
-                let (evaluated_first, env) = eval_obj(first.clone(), env)?;
+                let (evaluated_first, env) = first.clone().eval(env)?;
                 let (evaluated_rest, env) = eval_list_elements(rest, &env)?;
                 Ok((
                     Cons::Some(
@@ -81,7 +81,7 @@ pub fn eval_list_elements(
                 ))
             }
             _ => {
-                let (evaluated_first, env) = eval_obj(first.clone(), env)?;
+                let (evaluated_first, env) = first.clone().eval(env)?;
                 Ok((
                     Cons::Some(
                         evaluated_first,

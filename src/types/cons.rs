@@ -1,4 +1,4 @@
-use crate::types::{apply_obj, eval_obj, Error, Object};
+use crate::types::{Error, Object};
 use std::{fmt, rc::Rc};
 
 #[derive(Clone)]
@@ -45,8 +45,8 @@ impl Cons {
     pub fn eval(&self, env: &Cons) -> Result<(Rc<Object>, Cons), Error> {
         match &*self.cdr() {
             Object::Cons(args) => {
-                let (func, env) = eval_obj(self.car(), env)?;
-                apply_obj(&func, &args, &env)
+                let (func, env) = self.car().eval(env)?;
+                func.apply(&args, &env)
             }
             _ => Err(Error::new(
                 "cdr of argument passed to eval_cons must be a cons".into(),

@@ -8,7 +8,7 @@ macro_rules! simple_wrap_mayfail {
             env: &Cons,
         ) -> Result<(Rc<Object>, Cons), Error> {
             ensure_n_args(stringify!($wrapped_name), 1, args)?;
-            let (first_arg, env) = eval_obj(args.car(), env)?;
+            let (first_arg, env) = args.car().eval(env)?;
             Ok(($unwrapped_name(first_arg)?, env))
         }
     };
@@ -21,14 +21,14 @@ macro_rules! simple_wrap_nofail {
             env: &Cons,
         ) -> Result<(Rc<Object>, Cons), Error> {
             ensure_n_args(stringify!($wrapped_name), 1, args)?;
-            let (first_arg, env) = eval_obj(args.car(), env)?;
+            let (first_arg, env) = args.car().eval(env)?;
             Ok(($unwrapped_name(first_arg), env))
         }
     };
 }
 
-simple_wrap_mayfail!(wrapped_car, car_obj);
-simple_wrap_mayfail!(wrapped_cdr, cdr_obj);
+simple_wrap_mayfail!(wrapped_car, |obj: Rc<Object>| obj.car());
+simple_wrap_mayfail!(wrapped_cdr, |obj: Rc<Object>| obj.cdr());
 simple_wrap_nofail!(wrapped_not, |obj: Rc<_>| not(&obj));
 simple_wrap_mayfail!(wrapped_int_to_bool, |obj: Rc<_>| int_to_bool(&obj));
 simple_wrap_mayfail!(wrapped_bool_to_int, |obj: Rc<_>| bool_to_int(&obj));
@@ -55,8 +55,8 @@ pub fn wrapped_cons(
     env: &Cons,
 ) -> Result<(Rc<Object>, Cons), Error> {
     ensure_n_args("wrapped_cons", 2, args)?;
-    let (car, env) = eval_obj(args.car(), env)?;
-    let (cdr, env) = eval_obj(car_obj(args.cdr())?, &env)?;
+    let (car, env) = args.car().eval(env)?;
+    let (cdr, env) = args.cdr().car()?.eval(&env)?;
     Ok((Rc::new(Object::Cons(Cons::Some(car, cdr))), env))
 }
 
@@ -68,7 +68,7 @@ pub fn wrapped_add(
         Cons::Nil => Ok((Rc::new(Object::Integer(0.into())), env.clone())),
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
-                let (lhs, env) = eval_obj(car.clone(), env)?;
+                let (lhs, env) = car.clone().eval(env)?;
                 let (rhs, env) = wrapped_add(rest, &env)?;
                 Ok((Rc::new(add(&lhs, &rhs)?), env))
             }
@@ -88,12 +88,12 @@ pub fn wrapped_sub(
             "wrapped_sub expected at least 1 argument but got 0".into(),
         )),
         1 => {
-            let (rhs, env) = eval_obj(args.car(), env)?;
+            let (rhs, env) = args.car().eval(env)?;
             Ok((Rc::new(sub(&Object::Integer(0.into()), &rhs)?), env))
         }
         _ => match &*args.cdr() {
             Object::Cons(rest) => {
-                let (lhs, env) = eval_obj(args.car(), env)?;
+                let (lhs, env) = args.car().eval(env)?;
                 let (rhs, env) = wrapped_add(rest, &env)?;
                 Ok((Rc::new(sub(&lhs, &rhs)?), env))
             }
@@ -112,7 +112,7 @@ pub fn wrapped_mul(
         Cons::Nil => Ok((Rc::new(Object::Integer(1.into())), env.clone())),
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
-                let (lhs, env) = eval_obj(car.clone(), env)?;
+                let (lhs, env) = car.clone().eval(env)?;
                 let (rhs, env) = wrapped_mul(rest, &env)?;
                 Ok((Rc::new(mul(&lhs, &rhs)?), env))
             }
@@ -132,7 +132,7 @@ pub fn wrapped_lambda(
         Object::Cons(param_list) => Ok((
             Rc::new(Object::Function(Function::new(
                 param_list.clone(),
-                car_obj(args.cdr())?,
+                args.cdr().car()?,
             ))),
             env.clone(),
         )),
@@ -151,7 +151,7 @@ pub fn wrapped_and(
         Cons::Nil => Ok((Rc::new(Object::Bool(true.into())), env.clone())),
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
-                let (lhs, env) = eval_obj(car.clone(), env)?;
+                let (lhs, env) = car.clone().eval(env)?;
                 if is_truthy(&lhs) {
                     wrapped_and(rest, &env)
                 } else {
@@ -173,7 +173,7 @@ pub fn wrapped_or(
         Cons::Nil => Ok((Rc::new(Object::Bool(false.into())), env.clone())),
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
-                let (lhs, env) = eval_obj(car.clone(), env)?;
+                let (lhs, env) = car.clone().eval(env)?;
                 if is_truthy(&lhs) {
                     Ok((lhs, env))
                 } else {
@@ -194,7 +194,7 @@ pub fn wrapped_define(
     ensure_n_args("wrapped_define", 2, args)?;
     match &*args.car() {
         Object::Symbol(var_name) => {
-            let (var_value, env) = eval_obj(car_obj(args.cdr())?, env)?;
+            let (var_value, env) = args.cdr().car()?.eval(env)?;
             Ok((
                 Rc::new(Object::Symbol(var_name.clone())),
                 Cons::Some(
@@ -217,10 +217,10 @@ pub fn wrapped_if(
     env: &Cons,
 ) -> Result<(Rc<Object>, Cons), Error> {
     ensure_n_args("wrapped_if", 3, args)?;
-    let (condition, env) = eval_obj(args.car(), env)?;
+    let (condition, env) = args.car().eval(env)?;
     if is_truthy(&condition) {
-        eval_obj(car_obj(args.cdr())?, &env)
+        args.cdr().car()?.eval(&env)
     } else {
-        eval_obj(car_obj(cdr_obj(args.cdr())?)?, &env)
+        args.cdr().cdr()?.car()?.eval(&env)
     }
 }

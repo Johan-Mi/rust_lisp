@@ -6,7 +6,7 @@ mod wrapped;
 use lexer::lex;
 use parser::parse_expressions;
 use std::{fs, rc::Rc};
-use types::{eval_obj, BuiltinFunction, Cons, Object, Symbol};
+use types::{BuiltinFunction, Cons, Object, Symbol};
 use wrapped::*;
 
 macro_rules! make_env {
@@ -61,7 +61,7 @@ fn main() {
                 Some((exprs, _)) => {
                     for e in exprs {
                         println!("{}", e);
-                        match eval_obj(Rc::new(e), &env) {
+                        match Rc::new(e).eval(&env) {
                             Ok((result, new_env)) => {
                                 env = new_env;
                                 println!("=> {}", result);

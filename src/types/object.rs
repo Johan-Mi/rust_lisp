@@ -30,54 +30,56 @@ impl Object {
             Object::Bool(_) => "(type bool)",
         }
     }
-}
 
-pub fn car_obj(obj: Rc<Object>) -> Result<Rc<Object>, Error> {
-    match &*obj {
-        Object::Cons(cons) => match cons {
-            Cons::Some(..) => Ok(cons.car()),
-            Cons::Nil => Ok(obj), // We already have a nil, so let's reuse it
-        },
-        _ => Err(make_type_error("car_obj", &[&*obj])),
+    pub fn car(self: Rc<Self>) -> Result<Rc<Object>, Error> {
+        match &*self {
+            Object::Cons(cons) => match cons {
+                Cons::Some(..) => Ok(cons.car()),
+                Cons::Nil => Ok(self), // We already have a nil,
+                                       // so let's reuse it
+            },
+            _ => Err(make_type_error("Object::car", &[&*self])),
+        }
     }
-}
 
-pub fn cdr_obj(obj: Rc<Object>) -> Result<Rc<Object>, Error> {
-    match &*obj {
-        Object::Cons(cons) => match cons {
-            Cons::Some(..) => Ok(cons.cdr()),
-            Cons::Nil => Ok(obj), // We already have a nil, so let's reuse it
-        },
-        _ => Err(make_type_error("cdr_obj", &[&*obj])),
+    pub fn cdr(self: Rc<Self>) -> Result<Rc<Object>, Error> {
+        match &*self {
+            Object::Cons(cons) => match cons {
+                Cons::Some(..) => Ok(cons.cdr()),
+                Cons::Nil => Ok(self), // We already have a nil,
+                                       // so let's reuse it
+            },
+            _ => Err(make_type_error("Object::cdr", &[&*self])),
+        }
     }
-}
 
-pub fn apply_obj(
-    func_obj: &Object,
-    args: &Cons,
-    env: &Cons,
-) -> Result<(Rc<Object>, Cons), Error> {
-    match func_obj {
-        Object::Function(func) => func.apply(args, env),
-        Object::BuiltinFunction(func) => func.apply(args, env),
-        _ => Err(make_type_error("apply_obj", &[&*func_obj])),
+    pub fn apply(
+        &self,
+        args: &Cons,
+        env: &Cons,
+    ) -> Result<(Rc<Object>, Cons), Error> {
+        match self {
+            Object::Function(func) => func.apply(args, env),
+            Object::BuiltinFunction(func) => func.apply(args, env),
+            _ => Err(make_type_error("apply_obj", &[self])),
+        }
     }
-}
 
-pub fn eval_obj(
-    obj: Rc<Object>,
-    env: &Cons,
-) -> Result<(Rc<Object>, Cons), Error> {
-    match &*obj {
-        Object::Integer(_)
-        | Object::Bool(_)
-        | Object::Function(_)
-        | Object::BuiltinFunction(_) => Ok((obj, env.clone())),
-        Object::Cons(cons) => match cons {
-            Cons::Nil => Ok((obj, env.clone())),
-            _ => cons.eval(env),
-        },
-        Object::Symbol(symbol) => symbol.eval(env),
-        Object::Quote(quote) => Ok(((*quote).clone(), env.clone())),
+    pub fn eval(
+        self: Rc<Self>,
+        env: &Cons,
+    ) -> Result<(Rc<Object>, Cons), Error> {
+        match &*self {
+            Object::Integer(_)
+            | Object::Bool(_)
+            | Object::Function(_)
+            | Object::BuiltinFunction(_) => Ok((self, env.clone())),
+            Object::Cons(cons) => match cons {
+                Cons::Nil => Ok((self, env.clone())),
+                _ => cons.eval(env),
+            },
+            Object::Symbol(symbol) => symbol.eval(env),
+            Object::Quote(quote) => Ok(((*quote).clone(), env.clone())),
+        }
     }
 }
