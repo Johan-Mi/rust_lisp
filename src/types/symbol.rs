@@ -65,7 +65,7 @@ impl Symbol {
                     }
                     _ => match &**rest {
                         Object::Cons(next_cons) => {
-                            eval_symbol_internal(symbol, &next_cons)
+                            eval_symbol_internal(symbol, next_cons)
                         }
                         _ => Err(Error::new(
                             format!("Unbound variable {}", symbol).into(),

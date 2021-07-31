@@ -53,9 +53,7 @@ pub fn join_two_lists_cons(first: &Cons, second: &Cons, last: &Cons) -> Cons {
                 second_car.clone(),
             ))),
             Rc::new(Object::Cons(join_two_lists_obj(
-                &first_cdr,
-                &second_cdr,
-                last,
+                first_cdr, second_cdr, last,
             ))),
         ),
         _ => last.clone(),

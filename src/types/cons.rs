@@ -46,7 +46,7 @@ impl Cons {
         match &*self.cdr() {
             Object::Cons(args) => {
                 let (func, env) = self.car().eval(env)?;
-                func.apply(&args, &env)
+                func.apply(args, &env)
             }
             _ => Err(Error::new(
                 "cdr of argument passed to eval_cons must be a cons".into(),
