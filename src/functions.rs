@@ -5,7 +5,7 @@ use std::rc::Rc;
 pub fn add(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
     match (lhs_obj, rhs_obj) {
         (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Ok(Object::Integer(*lhs + *rhs))
+            Ok(Object::Integer(lhs + rhs))
         }
         _ => Err(make_type_error("add", &[lhs_obj, rhs_obj])),
     }
@@ -14,7 +14,7 @@ pub fn add(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
 pub fn sub(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
     match (lhs_obj, rhs_obj) {
         (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Ok(Object::Integer(*lhs - *rhs))
+            Ok(Object::Integer(lhs - rhs))
         }
         _ => Err(make_type_error("sub", &[lhs_obj, rhs_obj])),
     }
@@ -23,7 +23,7 @@ pub fn sub(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
 pub fn mul(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
     match (lhs_obj, rhs_obj) {
         (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Ok(Object::Integer((**lhs * **rhs).into()))
+            Ok(Object::Integer(lhs * rhs))
         }
         _ => Err(make_type_error("mul", &[lhs_obj, rhs_obj])),
     }
@@ -144,27 +144,25 @@ pub fn ensure_n_args(
 
 pub fn int_to_bool(obj: &Object) -> Result<Rc<Object>, Error> {
     match obj {
-        Object::Integer(val) => Ok(Rc::new(Object::Bool((**val != 0).into()))),
+        Object::Integer(val) => Ok(Rc::new(Object::Bool(*val != 0))),
         _ => Err(make_type_error("int_to_bool", &[&*obj])),
     }
 }
 
 pub fn bool_to_int(obj: &Object) -> Result<Rc<Object>, Error> {
     match obj {
-        Object::Bool(val) => {
-            Ok(Rc::new(Object::Integer((**val as i32).into())))
-        }
+        Object::Bool(val) => Ok(Rc::new(Object::Integer(*val as i32))),
         _ => Err(make_type_error("bool_to_int", &[&*obj])),
     }
 }
 
 pub fn is_truthy(obj: &Object) -> bool {
     match obj {
-        Object::Bool(b) => **b,
+        Object::Bool(b) => *b,
         _ => true,
     }
 }
 
 pub fn not(obj: &Object) -> Rc<Object> {
-    Rc::new(Object::Bool((!is_truthy(obj)).into()))
+    Rc::new(Object::Bool(!is_truthy(obj)))
 }

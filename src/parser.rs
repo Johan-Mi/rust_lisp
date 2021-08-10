@@ -1,10 +1,10 @@
 use crate::{
     lexer::Token,
-    types::{Cons, Integer, Object, Quote, Symbol},
+    types::{Cons, Object, Quote, Symbol},
 };
 use std::rc::Rc;
 
-fn parse_integer(tokens: &[Token]) -> Option<(Integer, &[Token])> {
+fn parse_integer(tokens: &[Token]) -> Option<(i32, &[Token])> {
     if let Some(Token::Ident(num_str)) = tokens.first() {
         let num = num_str.parse().ok()?;
         Some((num, tokens.get(1..)?))

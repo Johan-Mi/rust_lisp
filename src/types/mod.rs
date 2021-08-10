@@ -1,13 +1,9 @@
-mod integer;
-pub use integer::*;
 mod symbol;
 pub use symbol::*;
 mod error;
 pub use error::*;
 mod builtin_function;
 pub use builtin_function::*;
-mod boolean;
-pub use boolean::*;
 mod quote;
 pub use quote::*;
 mod function;

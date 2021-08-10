@@ -50,8 +50,8 @@ fn main() {
         "int?" = make_builtin_function!(wrapped_is_int),
         "bool?" = make_builtin_function!(wrapped_is_bool),
         "if" = make_builtin_function!(wrapped_if),
-        "true" = Rc::new(Object::Bool(true.into())),
-        "false" = Rc::new(Object::Bool(false.into()))
+        "true" = Rc::new(Object::Bool(true)),
+        "false" = Rc::new(Object::Bool(false))
     ];
 
     match fs::read_to_string("program.lisp") {

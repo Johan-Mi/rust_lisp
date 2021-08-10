@@ -33,13 +33,13 @@ simple_wrap_nofail!(wrapped_not, |obj: Rc<_>| not(&obj));
 simple_wrap_mayfail!(wrapped_int_to_bool, |obj: Rc<_>| int_to_bool(&obj));
 simple_wrap_mayfail!(wrapped_bool_to_int, |obj: Rc<_>| bool_to_int(&obj));
 simple_wrap_nofail!(wrapped_is_nil, |obj: Rc<_>| Rc::new(Object::Bool(
-    matches!(&*obj, Object::Cons(Cons::Nil)).into()
+    matches!(&*obj, Object::Cons(Cons::Nil))
 )));
 simple_wrap_nofail!(wrapped_is_int, |obj: Rc<_>| Rc::new(Object::Bool(
-    matches!(&*obj, Object::Integer(_)).into()
+    matches!(&*obj, Object::Integer(_))
 )));
 simple_wrap_nofail!(wrapped_is_bool, |obj: Rc<_>| Rc::new(Object::Bool(
-    matches!(&*obj, Object::Bool(_)).into()
+    matches!(&*obj, Object::Bool(_))
 )));
 
 pub fn wrapped_quote(
@@ -65,7 +65,7 @@ pub fn wrapped_add(
     env: &Cons,
 ) -> Result<(Rc<Object>, Cons), Error> {
     match args {
-        Cons::Nil => Ok((Rc::new(Object::Integer(0.into())), env.clone())),
+        Cons::Nil => Ok((Rc::new(Object::Integer(0)), env.clone())),
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = car.clone().eval(env)?;
@@ -89,7 +89,7 @@ pub fn wrapped_sub(
         )),
         1 => {
             let (rhs, env) = args.car().eval(env)?;
-            Ok((Rc::new(sub(&Object::Integer(0.into()), &rhs)?), env))
+            Ok((Rc::new(sub(&Object::Integer(0), &rhs)?), env))
         }
         _ => match &*args.cdr() {
             Object::Cons(rest) => {
@@ -109,7 +109,7 @@ pub fn wrapped_mul(
     env: &Cons,
 ) -> Result<(Rc<Object>, Cons), Error> {
     match args {
-        Cons::Nil => Ok((Rc::new(Object::Integer(1.into())), env.clone())),
+        Cons::Nil => Ok((Rc::new(Object::Integer(1)), env.clone())),
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = car.clone().eval(env)?;
@@ -148,7 +148,7 @@ pub fn wrapped_and(
     env: &Cons,
 ) -> Result<(Rc<Object>, Cons), Error> {
     match args {
-        Cons::Nil => Ok((Rc::new(Object::Bool(true.into())), env.clone())),
+        Cons::Nil => Ok((Rc::new(Object::Bool(true)), env.clone())),
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = car.clone().eval(env)?;
@@ -170,7 +170,7 @@ pub fn wrapped_or(
     env: &Cons,
 ) -> Result<(Rc<Object>, Cons), Error> {
     match args {
-        Cons::Nil => Ok((Rc::new(Object::Bool(false.into())), env.clone())),
+        Cons::Nil => Ok((Rc::new(Object::Bool(false)), env.clone())),
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = car.clone().eval(env)?;

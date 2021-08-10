@@ -1,21 +1,19 @@
 use crate::{
     functions::make_type_error,
-    types::{
-        Bool, BuiltinFunction, Cons, Error, Function, Integer, Quote, Symbol,
-    },
+    types::{BuiltinFunction, Cons, Error, Function, Quote, Symbol},
 };
 use derive_more::Display;
 use std::rc::Rc;
 
 #[derive(Display)]
 pub enum Object {
-    Integer(Integer),
+    Integer(i32),
     Symbol(Symbol),
     Function(Function),
     BuiltinFunction(BuiltinFunction),
     Quote(Quote),
     Cons(Cons),
-    Bool(Bool),
+    Bool(bool),
 }
 
 impl Object {
