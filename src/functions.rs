@@ -156,7 +156,7 @@ pub fn bool_to_int(obj: &Object) -> Result<Rc<Object>, Error> {
     }
 }
 
-pub fn is_truthy(obj: &Object) -> bool {
+pub const fn is_truthy(obj: &Object) -> bool {
     match obj {
         Object::Bool(b) => *b,
         _ => true,

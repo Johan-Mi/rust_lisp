@@ -1,3 +1,5 @@
+#![warn(clippy::nursery)]
+
 mod functions;
 mod lexer;
 mod parser;

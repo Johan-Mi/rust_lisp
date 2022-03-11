@@ -17,7 +17,7 @@ pub enum Object {
 }
 
 impl Object {
-    pub fn name_of_contained(&self) -> &str {
+    pub const fn name_of_contained(&self) -> &str {
         match self {
             Object::Integer(_) => "(type int)",
             Object::Symbol(_) => "(type symbol)",
@@ -29,7 +29,7 @@ impl Object {
         }
     }
 
-    pub fn car(self: Rc<Self>) -> Result<Rc<Object>, Error> {
+    pub fn car(self: Rc<Self>) -> Result<Rc<Self>, Error> {
         match &*self {
             Object::Cons(cons) => match cons {
                 Cons::Some(..) => Ok(cons.car()),
@@ -40,7 +40,7 @@ impl Object {
         }
     }
 
-    pub fn cdr(self: Rc<Self>) -> Result<Rc<Object>, Error> {
+    pub fn cdr(self: Rc<Self>) -> Result<Rc<Self>, Error> {
         match &*self {
             Object::Cons(cons) => match cons {
                 Cons::Some(..) => Ok(cons.cdr()),
@@ -55,7 +55,7 @@ impl Object {
         &self,
         args: &Cons,
         env: &Cons,
-    ) -> Result<(Rc<Object>, Cons), Error> {
+    ) -> Result<(Rc<Self>, Cons), Error> {
         match self {
             Object::Function(func) => func.apply(args, env),
             Object::BuiltinFunction(func) => func.apply(args, env),
@@ -63,10 +63,7 @@ impl Object {
         }
     }
 
-    pub fn eval(
-        self: Rc<Self>,
-        env: &Cons,
-    ) -> Result<(Rc<Object>, Cons), Error> {
+    pub fn eval(self: Rc<Self>, env: &Cons) -> Result<(Rc<Self>, Cons), Error> {
         match &*self {
             Object::Integer(_)
             | Object::Bool(_)

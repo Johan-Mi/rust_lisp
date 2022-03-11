@@ -42,7 +42,7 @@ impl FromStr for Symbol {
             char_is_symbol_initial(first_char)
                 && s.chars().skip(1).all(char_is_symbol_subsequent)
         } {
-            Ok(Symbol::new(String::from(s)))
+            Ok(Self::new(String::from(s)))
         } else {
             Err(())
         }

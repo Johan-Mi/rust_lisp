@@ -21,14 +21,14 @@ impl Cons {
     pub fn car(&self) -> Rc<Object> {
         match self {
             Cons::Some(first, _) => first.clone(),
-            Cons::Nil => Rc::new(Object::Cons(Cons::Nil)),
+            Cons::Nil => Rc::new(Object::Cons(Self::Nil)),
         }
     }
 
     pub fn cdr(&self) -> Rc<Object> {
         match self {
             Cons::Some(_, second) => second.clone(),
-            Cons::Nil => Rc::new(Object::Cons(Cons::Nil)),
+            Cons::Nil => Rc::new(Object::Cons(Self::Nil)),
         }
     }
 
@@ -42,7 +42,7 @@ impl Cons {
         }
     }
 
-    pub fn eval(&self, env: &Cons) -> Result<(Rc<Object>, Cons), Error> {
+    pub fn eval(&self, env: &Self) -> Result<(Rc<Object>, Self), Error> {
         match &*self.cdr() {
             Object::Cons(args) => {
                 let (func, env) = self.car().eval(env)?;
