@@ -6,7 +6,7 @@ use derive_more::{Constructor, Display};
 use std::rc::Rc;
 
 #[derive(Display, Constructor)]
-#[display(fmt = "Function {} => {}", parameters, body)]
+#[display(fmt = "Function {parameters} => {body}")]
 pub struct Function {
     parameters: Cons,
     body: Rc<Object>,

@@ -27,8 +27,8 @@ macro_rules! simple_wrap_nofail {
     };
 }
 
-simple_wrap_mayfail!(wrapped_car, |obj: Rc<Object>| obj.car());
-simple_wrap_mayfail!(wrapped_cdr, |obj: Rc<Object>| obj.cdr());
+simple_wrap_mayfail!(wrapped_car, Object::car);
+simple_wrap_mayfail!(wrapped_cdr, Object::cdr);
 simple_wrap_nofail!(wrapped_not, |obj: Rc<_>| not(&obj));
 simple_wrap_mayfail!(wrapped_int_to_bool, |obj: Rc<_>| int_to_bool(&obj));
 simple_wrap_mayfail!(wrapped_bool_to_int, |obj: Rc<_>| bool_to_int(&obj));

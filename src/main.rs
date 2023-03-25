@@ -62,14 +62,14 @@ fn main() {
             match parse_expressions(&lexed) {
                 Some((exprs, _)) => {
                     for e in exprs {
-                        println!("{}", e);
+                        println!("{e}");
                         match Rc::new(e).eval(&env) {
                             Ok((result, new_env)) => {
                                 env = new_env;
-                                println!("=> {}", result);
+                                println!("=> {result}");
                             }
                             Err(err) => {
-                                println!("{}", err);
+                                println!("{err}");
                             }
                         }
                     }
@@ -80,7 +80,7 @@ fn main() {
             }
         }
         Err(err) => {
-            eprintln!("{}", err);
+            eprintln!("{err}");
         }
     }
 }

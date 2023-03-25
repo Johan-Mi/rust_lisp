@@ -65,14 +65,14 @@ impl fmt::Display for Cons {
                         format!(" {}{}", first, to_cons_string(second))
                     }
                 },
-                _ => format!(" . {}", obj),
+                _ => format!(" . {obj}"),
             }
         }
 
         match self {
             Self::Nil => write!(formatter, "()"),
             Self::Some(first, second) => {
-                write!(formatter, "({}{})", first, to_cons_string(second))
+                write!(formatter, "({first}{})", to_cons_string(second))
             }
         }
     }
