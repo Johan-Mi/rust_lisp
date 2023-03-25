@@ -10,8 +10,8 @@ pub enum Cons {
 impl Cons {
     pub fn len(&self) -> usize {
         match self {
-            Cons::Nil => 0,
-            Cons::Some(_, next) => match &**next {
+            Self::Nil => 0,
+            Self::Some(_, next) => match &**next {
                 Object::Cons(rest) => rest.len() + 1,
                 _ => 1,
             },
@@ -20,22 +20,22 @@ impl Cons {
 
     pub fn car(&self) -> Rc<Object> {
         match self {
-            Cons::Some(first, _) => first.clone(),
-            Cons::Nil => Rc::new(Object::Cons(Self::Nil)),
+            Self::Some(first, _) => first.clone(),
+            Self::Nil => Rc::new(Object::Cons(Self::Nil)),
         }
     }
 
     pub fn cdr(&self) -> Rc<Object> {
         match self {
-            Cons::Some(_, second) => second.clone(),
-            Cons::Nil => Rc::new(Object::Cons(Self::Nil)),
+            Self::Some(_, second) => second.clone(),
+            Self::Nil => Rc::new(Object::Cons(Self::Nil)),
         }
     }
 
     pub fn is_proper_list(&self) -> bool {
         match self {
-            Cons::Nil => true,
-            Cons::Some(_, next) => match &**next {
+            Self::Nil => true,
+            Self::Some(_, next) => match &**next {
                 Object::Cons(rest) => rest.is_proper_list(),
                 _ => false,
             },
@@ -70,8 +70,8 @@ impl fmt::Display for Cons {
         }
 
         match self {
-            Cons::Nil => write!(formatter, "()"),
-            Cons::Some(first, second) => {
+            Self::Nil => write!(formatter, "()"),
+            Self::Some(first, second) => {
                 write!(formatter, "({}{})", first, to_cons_string(second))
             }
         }

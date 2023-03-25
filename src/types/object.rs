@@ -19,19 +19,19 @@ pub enum Object {
 impl Object {
     pub const fn name_of_contained(&self) -> &str {
         match self {
-            Object::Integer(_) => "(type int)",
-            Object::Symbol(_) => "(type symbol)",
-            Object::Function(_) => "(type function)",
-            Object::BuiltinFunction(_) => "(type builtin-function)",
-            Object::Quote(_) => "(type quote)",
-            Object::Cons(_) => "(type cons)",
-            Object::Bool(_) => "(type bool)",
+            Self::Integer(_) => "(type int)",
+            Self::Symbol(_) => "(type symbol)",
+            Self::Function(_) => "(type function)",
+            Self::BuiltinFunction(_) => "(type builtin-function)",
+            Self::Quote(_) => "(type quote)",
+            Self::Cons(_) => "(type cons)",
+            Self::Bool(_) => "(type bool)",
         }
     }
 
     pub fn car(self: Rc<Self>) -> Result<Rc<Self>, Error> {
         match &*self {
-            Object::Cons(cons) => match cons {
+            Self::Cons(cons) => match cons {
                 Cons::Some(..) => Ok(cons.car()),
                 Cons::Nil => Ok(self), // We already have a nil,
                                        // so let's reuse it
@@ -42,7 +42,7 @@ impl Object {
 
     pub fn cdr(self: Rc<Self>) -> Result<Rc<Self>, Error> {
         match &*self {
-            Object::Cons(cons) => match cons {
+            Self::Cons(cons) => match cons {
                 Cons::Some(..) => Ok(cons.cdr()),
                 Cons::Nil => Ok(self), // We already have a nil,
                                        // so let's reuse it
@@ -57,24 +57,24 @@ impl Object {
         env: &Cons,
     ) -> Result<(Rc<Self>, Cons), Error> {
         match self {
-            Object::Function(func) => func.apply(args, env),
-            Object::BuiltinFunction(func) => func.apply(args, env),
+            Self::Function(func) => func.apply(args, env),
+            Self::BuiltinFunction(func) => func.apply(args, env),
             _ => Err(make_type_error("apply_obj", &[self])),
         }
     }
 
     pub fn eval(self: Rc<Self>, env: &Cons) -> Result<(Rc<Self>, Cons), Error> {
         match &*self {
-            Object::Integer(_)
-            | Object::Bool(_)
-            | Object::Function(_)
-            | Object::BuiltinFunction(_) => Ok((self, env.clone())),
-            Object::Cons(cons) => match cons {
+            Self::Integer(_)
+            | Self::Bool(_)
+            | Self::Function(_)
+            | Self::BuiltinFunction(_) => Ok((self, env.clone())),
+            Self::Cons(cons) => match cons {
                 Cons::Nil => Ok((self, env.clone())),
                 _ => cons.eval(env),
             },
-            Object::Symbol(symbol) => symbol.eval(env),
-            Object::Quote(quote) => Ok(((*quote).clone(), env.clone())),
+            Self::Symbol(symbol) => symbol.eval(env),
+            Self::Quote(quote) => Ok(((*quote).clone(), env.clone())),
         }
     }
 }

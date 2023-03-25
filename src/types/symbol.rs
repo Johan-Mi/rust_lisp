@@ -2,7 +2,7 @@ use crate::types::{Cons, Error, Object};
 use derive_more::{Constructor, Display};
 use std::{rc::Rc, str::FromStr};
 
-#[derive(Clone, PartialEq, Display, Constructor)]
+#[derive(Clone, PartialEq, Eq, Display, Constructor)]
 pub struct Symbol {
     name: String,
 }
@@ -33,7 +33,7 @@ impl FromStr for Symbol {
 
         fn char_is_symbol_subsequent(c: char) -> bool {
             char_is_symbol_initial(c)
-                || c.is_digit(10)
+                || c.is_ascii_digit()
                 || matches!(c, '+' | '.' | '@' | '-')
         }
 

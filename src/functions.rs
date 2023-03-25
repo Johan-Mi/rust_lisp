@@ -145,14 +145,14 @@ pub fn ensure_n_args(
 pub fn int_to_bool(obj: &Object) -> Result<Rc<Object>, Error> {
     match obj {
         Object::Integer(val) => Ok(Rc::new(Object::Bool(*val != 0))),
-        _ => Err(make_type_error("int_to_bool", &[&*obj])),
+        _ => Err(make_type_error("int_to_bool", &[obj])),
     }
 }
 
 pub fn bool_to_int(obj: &Object) -> Result<Rc<Object>, Error> {
     match obj {
         Object::Bool(val) => Ok(Rc::new(Object::Integer(*val as i32))),
-        _ => Err(make_type_error("bool_to_int", &[&*obj])),
+        _ => Err(make_type_error("bool_to_int", &[obj])),
     }
 }
 
