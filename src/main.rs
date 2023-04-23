@@ -27,12 +27,6 @@ macro_rules! make_env {
     }
 }
 
-macro_rules! make_builtin_function {
-    ($func:expr) => {
-        Rc::new(Object::BuiltinFunction(BuiltinFunction::new($func)))
-    };
-}
-
 fn main() -> ExitCode {
     match real_main() {
         Ok(()) => ExitCode::SUCCESS,
@@ -41,25 +35,28 @@ fn main() -> ExitCode {
 }
 
 fn real_main() -> Result<(), ()> {
+    let builtin_function =
+        |func| Rc::new(Object::BuiltinFunction(BuiltinFunction::new(func)));
+
     let mut env = make_env![
-        "car" = make_builtin_function!(wrapped_car),
-        "cdr" = make_builtin_function!(wrapped_cdr),
-        "cons" = make_builtin_function!(wrapped_cons),
-        "lambda" = make_builtin_function!(wrapped_lambda),
-        "+" = make_builtin_function!(wrapped_add),
-        "-" = make_builtin_function!(wrapped_sub),
-        "*" = make_builtin_function!(wrapped_mul),
-        "quote" = make_builtin_function!(wrapped_quote),
-        "int->bool" = make_builtin_function!(wrapped_int_to_bool),
-        "bool->int" = make_builtin_function!(wrapped_bool_to_int),
-        "and" = make_builtin_function!(wrapped_and),
-        "or" = make_builtin_function!(wrapped_or),
-        "not" = make_builtin_function!(wrapped_not),
-        "define" = make_builtin_function!(wrapped_define),
-        "nil?" = make_builtin_function!(wrapped_is_nil),
-        "int?" = make_builtin_function!(wrapped_is_int),
-        "bool?" = make_builtin_function!(wrapped_is_bool),
-        "if" = make_builtin_function!(wrapped_if),
+        "car" = builtin_function(wrapped_car),
+        "cdr" = builtin_function(wrapped_cdr),
+        "cons" = builtin_function(wrapped_cons),
+        "lambda" = builtin_function(wrapped_lambda),
+        "+" = builtin_function(wrapped_add),
+        "-" = builtin_function(wrapped_sub),
+        "*" = builtin_function(wrapped_mul),
+        "quote" = builtin_function(wrapped_quote),
+        "int->bool" = builtin_function(wrapped_int_to_bool),
+        "bool->int" = builtin_function(wrapped_bool_to_int),
+        "and" = builtin_function(wrapped_and),
+        "or" = builtin_function(wrapped_or),
+        "not" = builtin_function(wrapped_not),
+        "define" = builtin_function(wrapped_define),
+        "nil?" = builtin_function(wrapped_is_nil),
+        "int?" = builtin_function(wrapped_is_int),
+        "bool?" = builtin_function(wrapped_is_bool),
+        "if" = builtin_function(wrapped_if),
         "true" = Rc::new(Object::Bool(true)),
         "false" = Rc::new(Object::Bool(false))
     ];
