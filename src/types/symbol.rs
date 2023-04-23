@@ -37,10 +37,11 @@ impl FromStr for Symbol {
                 || matches!(c, '+' | '.' | '@' | '-')
         }
 
-        if s == "+" || s == "-" || s == "..." || {
-            let first_char = s.chars().next().ok_or(())?;
+        if matches!(s, "+" | "-" | "...") || {
+            let mut chars = s.chars();
+            let first_char = chars.next().ok_or(())?;
             char_is_symbol_initial(first_char)
-                && s.chars().skip(1).all(char_is_symbol_subsequent)
+                && chars.all(char_is_symbol_subsequent)
         } {
             Ok(Self::new(String::from(s)))
         } else {
