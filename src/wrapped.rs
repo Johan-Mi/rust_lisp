@@ -1,7 +1,7 @@
 use crate::{functions::*, types::*};
 use std::rc::Rc;
 
-macro_rules! simple_wrap_mayfail {
+macro_rules! wrap_fallible {
     ($wrapped_name:ident, $unwrapped_name:expr) => {
         pub fn $wrapped_name(
             args: &Cons,
@@ -14,7 +14,7 @@ macro_rules! simple_wrap_mayfail {
     };
 }
 
-macro_rules! simple_wrap_nofail {
+macro_rules! wrap_infallible {
     ($wrapped_name:ident, $unwrapped_name:expr) => {
         pub fn $wrapped_name(
             args: &Cons,
@@ -27,18 +27,18 @@ macro_rules! simple_wrap_nofail {
     };
 }
 
-simple_wrap_mayfail!(wrapped_car, Object::car);
-simple_wrap_mayfail!(wrapped_cdr, Object::cdr);
-simple_wrap_nofail!(wrapped_not, |obj: Rc<_>| not(&obj));
-simple_wrap_mayfail!(wrapped_int_to_bool, |obj: Rc<_>| int_to_bool(&obj));
-simple_wrap_mayfail!(wrapped_bool_to_int, |obj: Rc<_>| bool_to_int(&obj));
-simple_wrap_nofail!(wrapped_is_nil, |obj: Rc<_>| Rc::new(Object::Bool(
+wrap_fallible!(wrapped_car, Object::car);
+wrap_fallible!(wrapped_cdr, Object::cdr);
+wrap_infallible!(wrapped_not, |obj: Rc<_>| not(&obj));
+wrap_fallible!(wrapped_int_to_bool, |obj: Rc<_>| int_to_bool(&obj));
+wrap_fallible!(wrapped_bool_to_int, |obj: Rc<_>| bool_to_int(&obj));
+wrap_infallible!(wrapped_is_nil, |obj: Rc<_>| Rc::new(Object::Bool(
     matches!(&*obj, Object::Cons(Cons::Nil))
 )));
-simple_wrap_nofail!(wrapped_is_int, |obj: Rc<_>| Rc::new(Object::Bool(
+wrap_infallible!(wrapped_is_int, |obj: Rc<_>| Rc::new(Object::Bool(
     matches!(&*obj, Object::Integer(_))
 )));
-simple_wrap_nofail!(wrapped_is_bool, |obj: Rc<_>| Rc::new(Object::Bool(
+wrap_infallible!(wrapped_is_bool, |obj: Rc<_>| Rc::new(Object::Bool(
     matches!(&*obj, Object::Bool(_))
 )));
 
