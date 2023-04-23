@@ -131,11 +131,8 @@ pub fn ensure_n_args(
     let length = list.len();
     if length != n {
         return Err(Error::new(
-            format!(
-                "{} expected {} arguments but got {}",
-                func_name, n, length
-            )
-            .into(),
+            format!("{func_name} expected {n} arguments but got {length}")
+                .into(),
         ));
     }
 
