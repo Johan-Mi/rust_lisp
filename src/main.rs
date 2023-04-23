@@ -8,7 +8,7 @@ mod types;
 mod wrapped;
 use lexer::lex;
 use parser::parse_expressions;
-use std::{fs, rc::Rc};
+use std::{fs, process::ExitCode, rc::Rc};
 use types::{BuiltinFunction, Cons, Object, Symbol};
 use wrapped::*;
 
@@ -33,7 +33,14 @@ macro_rules! make_builtin_function {
     };
 }
 
-fn main() {
+fn main() -> ExitCode {
+    match real_main() {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(()) => ExitCode::FAILURE,
+    }
+}
+
+fn real_main() -> Result<(), ()> {
     let mut env = make_env![
         "car" = make_builtin_function!(wrapped_car),
         "cdr" = make_builtin_function!(wrapped_cdr),
@@ -57,31 +64,27 @@ fn main() {
         "false" = Rc::new(Object::Bool(false))
     ];
 
-    match fs::read_to_string("program.lisp") {
-        Ok(program_str) => {
-            let lexed = lex(&program_str);
-            match parse_expressions(&lexed) {
-                Some((exprs, _)) => {
-                    for e in exprs {
-                        println!("{e}");
-                        match Rc::new(e).eval(&env) {
-                            Ok((result, new_env)) => {
-                                env = new_env;
-                                println!("=> {result}");
-                            }
-                            Err(err) => {
-                                println!("{err}");
-                            }
-                        }
-                    }
-                }
-                _ => {
-                    eprintln!("Couldn't parse file");
-                }
+    let source_code = fs::read_to_string("program.lisp").map_err(|err| {
+        println!("Error: failed to read source file: {err}");
+    })?;
+
+    let lexed = lex(&source_code);
+    let (exprs, _) = parse_expressions(&lexed).ok_or_else(|| {
+        println!("Error: couldn't parse source code");
+    })?;
+
+    for e in exprs {
+        println!("{e}");
+        match Rc::new(e).eval(&env) {
+            Ok((result, new_env)) => {
+                env = new_env;
+                println!("=> {result}");
+            }
+            Err(err) => {
+                println!("{err}");
             }
         }
-        Err(err) => {
-            eprintln!("{err}");
-        }
     }
+
+    Ok(())
 }
