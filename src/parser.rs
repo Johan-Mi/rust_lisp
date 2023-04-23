@@ -5,47 +5,38 @@ use crate::{
 use std::rc::Rc;
 
 fn parse_integer(tokens: &[Token]) -> Option<(i32, &[Token])> {
-    if let Some(Token::Ident(num_str)) = tokens.first() {
+    if let [Token::Ident(num_str), tokens @ ..] = tokens {
         let num = num_str.parse().ok()?;
-        Some((num, tokens.get(1..)?))
+        Some((num, tokens))
     } else {
         None
     }
 }
 
 fn parse_symbol(tokens: &[Token]) -> Option<(Symbol, &[Token])> {
-    if let Some(Token::Ident(symbol_str)) = tokens.first() {
+    if let [Token::Ident(symbol_str), tokens @ ..] = tokens {
         let symbol = symbol_str.parse().ok()?;
-        Some((symbol, tokens.get(1..)?))
+        Some((symbol, tokens))
     } else {
         None
     }
 }
 
 fn parse_lparen(tokens: &[Token]) -> Option<&[Token]> {
-    match tokens.first() {
-        Some(Token::LParen) => tokens.get(1..),
-        _ => None,
-    }
+    tokens.strip_prefix(&[Token::LParen])
 }
 
 fn parse_rparen(tokens: &[Token]) -> Option<&[Token]> {
-    match tokens.first() {
-        Some(Token::RParen) => tokens.get(1..),
-        _ => None,
-    }
+    tokens.strip_prefix(&[Token::RParen])
 }
 
 fn parse_quote(tokens: &[Token]) -> Option<&[Token]> {
-    match tokens.first() {
-        Some(Token::Quote) => tokens.get(1..),
-        _ => None,
-    }
+    tokens.strip_prefix(&[Token::Quote])
 }
 
 fn parse_dot(tokens: &[Token]) -> Option<&[Token]> {
-    match tokens.first() {
-        Some(Token::Ident(s)) if s == "." => tokens.get(1..),
+    match tokens {
+        [Token::Ident(s), tokens @ ..] if s == "." => Some(tokens),
         _ => None,
     }
 }
