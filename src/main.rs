@@ -1,3 +1,4 @@
+#![forbid(unsafe_code)]
 #![warn(clippy::nursery)]
 
 mod functions;
