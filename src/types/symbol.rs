@@ -1,4 +1,5 @@
-use crate::types::{Cons, Error, Object};
+use crate::types::{Cons, Object};
+use anyhow::{bail, Result};
 use std::{fmt, rc::Rc, str::FromStr};
 
 #[derive(Clone, PartialEq, Eq)]
@@ -58,15 +59,13 @@ impl FromStr for Symbol {
 }
 
 impl Symbol {
-    pub fn eval(&self, env: &Cons) -> Result<(Rc<Object>, Cons), Error> {
+    pub fn eval(&self, env: &Cons) -> Result<(Rc<Object>, Cons)> {
         fn eval_symbol_internal(
             symbol: &Symbol,
             env: &Cons,
-        ) -> Result<Rc<Object>, Error> {
+        ) -> Result<Rc<Object>> {
             match env {
-                Cons::Nil => {
-                    Err(Error::new(format!("Unbound variable {symbol}").into()))
-                }
+                Cons::Nil => bail!("Unbound variable {symbol}"),
                 Cons::Some(first, rest) => match &*first.clone().car()? {
                     Object::Symbol(found_symbol) if symbol == found_symbol => {
                         first.clone().cdr()
@@ -75,9 +74,7 @@ impl Symbol {
                         Object::Cons(next_cons) => {
                             eval_symbol_internal(symbol, next_cons)
                         }
-                        _ => Err(Error::new(
-                            format!("Unbound variable {symbol}").into(),
-                        )),
+                        _ => bail!("Unbound variable {symbol}"),
                     },
                 },
             }

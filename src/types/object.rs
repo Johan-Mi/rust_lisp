@@ -1,7 +1,8 @@
 use crate::{
     functions::make_type_error,
-    types::{BuiltinFunction, Cons, Error, Function, Quote, Symbol},
+    types::{BuiltinFunction, Cons, Function, Quote, Symbol},
 };
+use anyhow::Result;
 use std::{fmt, rc::Rc};
 
 pub enum Object {
@@ -41,7 +42,7 @@ impl Object {
         }
     }
 
-    pub fn car(self: Rc<Self>) -> Result<Rc<Self>, Error> {
+    pub fn car(self: Rc<Self>) -> Result<Rc<Self>> {
         match &*self {
             Self::Cons(cons) => match cons {
                 Cons::Some(..) => Ok(cons.car()),
@@ -52,7 +53,7 @@ impl Object {
         }
     }
 
-    pub fn cdr(self: Rc<Self>) -> Result<Rc<Self>, Error> {
+    pub fn cdr(self: Rc<Self>) -> Result<Rc<Self>> {
         match &*self {
             Self::Cons(cons) => match cons {
                 Cons::Some(..) => Ok(cons.cdr()),
@@ -63,11 +64,7 @@ impl Object {
         }
     }
 
-    pub fn apply(
-        &self,
-        args: &Cons,
-        env: &Cons,
-    ) -> Result<(Rc<Self>, Cons), Error> {
+    pub fn apply(&self, args: &Cons, env: &Cons) -> Result<(Rc<Self>, Cons)> {
         match self {
             Self::Function(func) => func.apply(args, env),
             Self::BuiltinFunction(func) => func.apply(args, env),
@@ -75,7 +72,7 @@ impl Object {
         }
     }
 
-    pub fn eval(self: Rc<Self>, env: &Cons) -> Result<(Rc<Self>, Cons), Error> {
+    pub fn eval(self: Rc<Self>, env: &Cons) -> Result<(Rc<Self>, Cons)> {
         match &*self {
             Self::Integer(_)
             | Self::Bool(_)

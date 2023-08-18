@@ -1,7 +1,5 @@
 mod symbol;
 pub use symbol::*;
-mod error;
-pub use error::*;
 mod builtin_function;
 pub use builtin_function::*;
 mod quote;

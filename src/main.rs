@@ -6,9 +6,10 @@ mod lexer;
 mod parser;
 mod types;
 mod wrapped;
+use anyhow::{Context, Result};
 use lexer::lex;
 use parser::parse_expressions;
-use std::{fs, process::ExitCode, rc::Rc};
+use std::{fs, rc::Rc};
 use types::{BuiltinFunction, Cons, Object};
 use wrapped::*;
 
@@ -25,14 +26,7 @@ macro_rules! make_env {
     }
 }
 
-fn main() -> ExitCode {
-    match real_main() {
-        Ok(()) => ExitCode::SUCCESS,
-        Err(()) => ExitCode::FAILURE,
-    }
-}
-
-fn real_main() -> Result<(), ()> {
+fn main() -> Result<()> {
     let builtin_function =
         |func| Rc::new(Object::BuiltinFunction(BuiltinFunction(func)));
 
@@ -59,14 +53,12 @@ fn real_main() -> Result<(), ()> {
         "false" = Rc::new(Object::Bool(false))
     ];
 
-    let source_code = fs::read_to_string("program.lisp").map_err(|err| {
-        println!("Error: failed to read source file: {err}");
-    })?;
+    let source_code = fs::read_to_string("program.lisp")
+        .context("failed to read source file")?;
 
     let lexed = lex(&source_code);
-    let (exprs, _) = parse_expressions(&lexed).ok_or_else(|| {
-        println!("Error: couldn't parse source code");
-    })?;
+    let (exprs, _) =
+        parse_expressions(&lexed).context("failed to parse source code")?;
 
     for e in exprs {
         println!("{e}");

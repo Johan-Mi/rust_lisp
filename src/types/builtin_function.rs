@@ -1,7 +1,8 @@
-use crate::types::{Cons, Error, Object};
+use crate::types::{Cons, Object};
+use anyhow::Result;
 use std::{fmt, rc::Rc};
 
-type FnType = fn(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons), Error>;
+type FnType = fn(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)>;
 
 pub struct BuiltinFunction(pub FnType);
 
@@ -12,11 +13,7 @@ impl fmt::Display for BuiltinFunction {
 }
 
 impl BuiltinFunction {
-    pub fn apply(
-        &self,
-        args: &Cons,
-        env: &Cons,
-    ) -> Result<(Rc<Object>, Cons), Error> {
+    pub fn apply(&self, args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
         (self.0)(args, env)
     }
 }

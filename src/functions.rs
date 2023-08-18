@@ -1,8 +1,9 @@
 use crate::types::*;
+use anyhow::{anyhow, ensure, Error, Result};
 use itertools::Itertools;
 use std::rc::Rc;
 
-pub fn add(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
+pub fn add(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object> {
     match (lhs_obj, rhs_obj) {
         (Object::Integer(lhs), Object::Integer(rhs)) => {
             Ok(Object::Integer(lhs + rhs))
@@ -11,7 +12,7 @@ pub fn add(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
     }
 }
 
-pub fn sub(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
+pub fn sub(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object> {
     match (lhs_obj, rhs_obj) {
         (Object::Integer(lhs), Object::Integer(rhs)) => {
             Ok(Object::Integer(lhs - rhs))
@@ -20,7 +21,7 @@ pub fn sub(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
     }
 }
 
-pub fn mul(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object, Error> {
+pub fn mul(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object> {
     match (lhs_obj, rhs_obj) {
         (Object::Integer(lhs), Object::Integer(rhs)) => {
             Ok(Object::Integer(lhs * rhs))
@@ -60,10 +61,7 @@ pub fn join_two_lists_cons(first: &Cons, second: &Cons, last: &Cons) -> Cons {
     }
 }
 
-pub fn eval_list_elements(
-    list: &Cons,
-    env: &Cons,
-) -> Result<(Cons, Cons), Error> {
+pub fn eval_list_elements(list: &Cons, env: &Cons) -> Result<(Cons, Cons)> {
     match list {
         Cons::Nil => Ok((list.clone(), env.clone())),
         Cons::Some(first, second) => match &**second {
@@ -104,49 +102,38 @@ macro_rules! make_list {
 }
 
 pub fn make_type_error(func_name: &str, args: &[&Object]) -> Error {
-    Error::new(
-        format!(
-            "{} is not callable with types ({})",
-            func_name,
-            args.iter()
-                .copied()
-                .map(Object::name_of_contained)
-                .join(" ")
-        )
-        .into(),
+    anyhow!(
+        "{func_name} is not callable with types ({})",
+        args.iter()
+            .copied()
+            .map(Object::name_of_contained)
+            .join(" ")
     )
 }
 
-pub fn ensure_n_args(
-    func_name: &str,
-    n: usize,
-    list: &Cons,
-) -> Result<(), Error> {
-    if !list.is_proper_list() {
-        return Err(Error::new(
-            format!("Call to {func_name} must be a proper list").into(),
-        ));
-    }
+pub fn ensure_n_args(func_name: &str, n: usize, list: &Cons) -> Result<()> {
+    ensure!(
+        list.is_proper_list(),
+        "call to {func_name} must be a proper list",
+    );
 
     let length = list.len();
-    if length != n {
-        return Err(Error::new(
-            format!("{func_name} expected {n} arguments but got {length}")
-                .into(),
-        ));
-    }
+    ensure!(
+        length == n,
+        "{func_name} expected {n} arguments but got {length}"
+    );
 
     Ok(())
 }
 
-pub fn int_to_bool(obj: &Object) -> Result<Rc<Object>, Error> {
+pub fn int_to_bool(obj: &Object) -> Result<Rc<Object>> {
     match obj {
         Object::Integer(val) => Ok(Rc::new(Object::Bool(*val != 0))),
         _ => Err(make_type_error("int_to_bool", &[obj])),
     }
 }
 
-pub fn bool_to_int(obj: &Object) -> Result<Rc<Object>, Error> {
+pub fn bool_to_int(obj: &Object) -> Result<Rc<Object>> {
     match obj {
         Object::Bool(val) => Ok(Rc::new(Object::Integer((*val).into()))),
         _ => Err(make_type_error("bool_to_int", &[obj])),

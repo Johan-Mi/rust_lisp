@@ -1,4 +1,5 @@
-use crate::types::{Error, Object};
+use crate::types::Object;
+use anyhow::{bail, Result};
 use std::{fmt, rc::Rc};
 
 #[derive(Clone)]
@@ -42,15 +43,12 @@ impl Cons {
         }
     }
 
-    pub fn eval(&self, env: &Self) -> Result<(Rc<Object>, Self), Error> {
-        if let Object::Cons(args) = &*self.cdr() {
-            let (func, env) = self.car().eval(env)?;
-            func.apply(args, &env)
-        } else {
-            Err(Error::new(
-                "cdr of argument passed to eval_cons must be a cons".into(),
-            ))
-        }
+    pub fn eval(&self, env: &Self) -> Result<(Rc<Object>, Self)> {
+        let Object::Cons(args) = &*self.cdr() else {
+            bail!("cdr of argument passed to eval_cons must be a cons");
+        };
+        let (func, env) = self.car().eval(env)?;
+        func.apply(args, &env)
     }
 }
 

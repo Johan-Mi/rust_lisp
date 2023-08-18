@@ -1,7 +1,8 @@
 use crate::{
     functions::{eval_list_elements, join_two_lists_cons},
-    types::{Cons, Error, Object},
+    types::{Cons, Object},
 };
+use anyhow::Result;
 use std::{fmt, rc::Rc};
 
 pub struct Function {
@@ -20,11 +21,7 @@ impl Function {
         Self { parameters, body }
     }
 
-    pub fn apply(
-        &self,
-        args: &Cons,
-        env: &Cons,
-    ) -> Result<(Rc<Object>, Cons), Error> {
+    pub fn apply(&self, args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
         let (calling_args, env) = eval_list_elements(args, env)?;
         self.body.clone().eval(&join_two_lists_cons(
             &self.parameters,
