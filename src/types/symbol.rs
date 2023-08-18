@@ -43,12 +43,10 @@ impl FromStr for Symbol {
                 || matches!(c, '+' | '.' | '@' | '-')
         }
 
-        if matches!(s, "+" | "-" | "...") || {
-            let mut chars = s.chars();
-            let first_char = chars.next().ok_or(())?;
-            char_is_symbol_initial(first_char)
-                && chars.all(char_is_symbol_subsequent)
-        } {
+        if matches!(s, "+" | "-" | "...")
+            || s.starts_with(char_is_symbol_initial)
+                && s.chars().all(char_is_symbol_subsequent)
+        {
             Ok(Self {
                 name: String::from(s),
             })
