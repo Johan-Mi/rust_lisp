@@ -9,7 +9,7 @@ mod wrapped;
 use lexer::lex;
 use parser::parse_expressions;
 use std::{fs, process::ExitCode, rc::Rc};
-use types::{BuiltinFunction, Cons, Object, Symbol};
+use types::{BuiltinFunction, Cons, Object};
 use wrapped::*;
 
 macro_rules! make_env {
@@ -17,9 +17,7 @@ macro_rules! make_env {
         make_list![
         $(
             Rc::new(Object::Cons(Cons::Some(
-                Rc::new(Object::Symbol(Symbol::new(
-                    String::from($name),
-                ))),
+                Rc::new(Object::Symbol($name.parse().unwrap())),
                 $value
             )))
         ),*
@@ -36,7 +34,7 @@ fn main() -> ExitCode {
 
 fn real_main() -> Result<(), ()> {
     let builtin_function =
-        |func| Rc::new(Object::BuiltinFunction(BuiltinFunction::new(func)));
+        |func| Rc::new(Object::BuiltinFunction(BuiltinFunction(func)));
 
     let mut env = make_env![
         "car" = builtin_function(wrapped_car),

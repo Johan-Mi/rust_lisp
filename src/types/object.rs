@@ -2,10 +2,8 @@ use crate::{
     functions::make_type_error,
     types::{BuiltinFunction, Cons, Error, Function, Quote, Symbol},
 };
-use derive_more::Display;
-use std::rc::Rc;
+use std::{fmt, rc::Rc};
 
-#[derive(Display)]
 pub enum Object {
     Integer(i32),
     Symbol(Symbol),
@@ -14,6 +12,20 @@ pub enum Object {
     Quote(Quote),
     Cons(Cons),
     Bool(bool),
+}
+
+impl fmt::Display for Object {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Integer(inner) => inner.fmt(f),
+            Self::Symbol(inner) => inner.fmt(f),
+            Self::Function(inner) => inner.fmt(f),
+            Self::BuiltinFunction(inner) => inner.fmt(f),
+            Self::Quote(inner) => inner.fmt(f),
+            Self::Cons(inner) => inner.fmt(f),
+            Self::Bool(inner) => inner.fmt(f),
+        }
+    }
 }
 
 impl Object {

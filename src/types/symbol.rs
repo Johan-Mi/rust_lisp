@@ -1,10 +1,15 @@
 use crate::types::{Cons, Error, Object};
-use derive_more::{Constructor, Display};
-use std::{rc::Rc, str::FromStr};
+use std::{fmt, rc::Rc, str::FromStr};
 
-#[derive(Clone, PartialEq, Eq, Display, Constructor)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Symbol {
     name: String,
+}
+
+impl fmt::Display for Symbol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.name.fmt(f)
+    }
 }
 
 impl FromStr for Symbol {
@@ -43,7 +48,9 @@ impl FromStr for Symbol {
             char_is_symbol_initial(first_char)
                 && chars.all(char_is_symbol_subsequent)
         } {
-            Ok(Self::new(String::from(s)))
+            Ok(Self {
+                name: String::from(s),
+            })
         } else {
             Err(())
         }

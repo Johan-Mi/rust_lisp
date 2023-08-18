@@ -1,12 +1,15 @@
 use crate::types::{Cons, Error, Object};
-use derive_more::{Constructor, Display};
-use std::rc::Rc;
+use std::{fmt, rc::Rc};
 
 type FnType = fn(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons), Error>;
 
-#[derive(Display, Constructor)]
-#[display(fmt = "Builtin function")]
-pub struct BuiltinFunction(FnType);
+pub struct BuiltinFunction(pub FnType);
+
+impl fmt::Display for BuiltinFunction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Builtin function")
+    }
+}
 
 impl BuiltinFunction {
     pub fn apply(
