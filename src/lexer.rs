@@ -6,49 +6,34 @@ pub enum Token {
     Ident(String),
 }
 
-pub fn lex(s: &str) -> Vec<Token> {
-    let mut ret = Vec::new();
+pub fn lex(mut source: &str) -> Vec<Token> {
+    let mut tokens = Vec::new();
 
-    let mut string_buffer = String::new();
-
-    for c in s.chars() {
-        match c {
-            '(' => {
-                if !string_buffer.is_empty() {
-                    ret.push(Token::Ident(string_buffer));
-                    string_buffer = String::new();
-                }
-                ret.push(Token::LParen);
+    loop {
+        source = source.trim_start();
+        source = if let Some(s) = source.strip_prefix('(') {
+            tokens.push(Token::LParen);
+            s
+        } else if let Some(s) = source.strip_prefix(')') {
+            tokens.push(Token::RParen);
+            s
+        } else if let Some(s) = source.strip_prefix('\'') {
+            tokens.push(Token::Quote);
+            s
+        } else {
+            let ident_end = source
+                .find(|c: char| {
+                    c.is_whitespace() || matches!(c, '(' | ')' | '\'')
+                })
+                .unwrap_or(source.len());
+            if ident_end == 0 {
+                break;
             }
-            ')' => {
-                if !string_buffer.is_empty() {
-                    ret.push(Token::Ident(string_buffer));
-                    string_buffer = String::new();
-                }
-                ret.push(Token::RParen);
-            }
-            '\'' => {
-                if !string_buffer.is_empty() {
-                    ret.push(Token::Ident(string_buffer));
-                    string_buffer = String::new();
-                }
-                ret.push(Token::Quote);
-            }
-            ' ' | '\t' | '\n' => {
-                if !string_buffer.is_empty() {
-                    ret.push(Token::Ident(string_buffer));
-                    string_buffer = String::new();
-                }
-            }
-            _ => {
-                string_buffer.push(c);
-            }
+            let (ident, s) = source.split_at(ident_end);
+            tokens.push(Token::Ident(ident.to_owned()));
+            s
         }
     }
 
-    if !string_buffer.is_empty() {
-        ret.push(Token::Ident(string_buffer));
-    }
-
-    ret
+    tokens
 }
