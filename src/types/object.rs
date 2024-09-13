@@ -83,7 +83,7 @@ impl Object {
                 _ => cons.eval(env),
             },
             Self::Symbol(symbol) => symbol.eval(env),
-            Self::Quote(quote) => Ok(((*quote).clone(), env.clone())),
+            Self::Quote(quote) => Ok((quote.0.clone(), env.clone())),
         }
     }
 }

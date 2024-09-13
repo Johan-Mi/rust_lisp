@@ -1,26 +1,10 @@
 use crate::types::Object;
 use std::{fmt, rc::Rc};
 
-pub struct Quote {
-    contained: Rc<Object>,
-}
-
-impl std::ops::Deref for Quote {
-    type Target = Rc<Object>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.contained
-    }
-}
+pub struct Quote(pub Rc<Object>);
 
 impl fmt::Display for Quote {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "(quote {})", self.contained)
-    }
-}
-
-impl Quote {
-    pub const fn new(contained: Rc<Object>) -> Self {
-        Self { contained }
+        write!(f, "(quote {})", self.0)
     }
 }
