@@ -16,10 +16,10 @@ macro_rules! make_env {
     ($($name:literal = $value:expr),*) => {
         make_list![
         $(
-            Rc::new(Object::Cons(Cons::Some(
+            Rc::new(Object::Cons(Cons(Some((
                 Rc::new(Object::Symbol($name.parse().unwrap())),
                 $value
-            )))
+            )))))
         ),*
         ]
     }

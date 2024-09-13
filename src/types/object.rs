@@ -44,10 +44,9 @@ impl Object {
 
     pub fn car(self: Rc<Self>) -> Result<Rc<Self>> {
         match &*self {
-            Self::Cons(cons) => match cons {
-                Cons::Some(..) => Ok(cons.car()),
-                Cons::Nil => Ok(self), // We already have a nil,
-                                       // so let's reuse it
+            Self::Cons(cons) => match &cons.0 {
+                Some(_) => Ok(cons.car()),
+                None => Ok(self), // We already have a nil, so let's reuse it
             },
             _ => Err(make_type_error("Object::car", &[&*self])),
         }
@@ -55,10 +54,9 @@ impl Object {
 
     pub fn cdr(self: Rc<Self>) -> Result<Rc<Self>> {
         match &*self {
-            Self::Cons(cons) => match cons {
-                Cons::Some(..) => Ok(cons.cdr()),
-                Cons::Nil => Ok(self), // We already have a nil,
-                                       // so let's reuse it
+            Self::Cons(cons) => match &cons.0 {
+                Some(_) => Ok(cons.cdr()),
+                None => Ok(self), // We already have a nil, so let's reuse it
             },
             _ => Err(make_type_error("Object::cdr", &[&*self])),
         }
@@ -78,9 +76,9 @@ impl Object {
             | Self::Bool(_)
             | Self::Function(_)
             | Self::BuiltinFunction(_) => Ok((self, env.clone())),
-            Self::Cons(cons) => match cons {
-                Cons::Nil => Ok((self, env.clone())),
-                _ => cons.eval(env),
+            Self::Cons(cons) => match &cons.0 {
+                None => Ok((self, env.clone())),
+                Some(_) => cons.eval(env),
             },
             Self::Symbol(symbol) => symbol.eval(env),
             Self::Quote(quote) => Ok((quote.0.clone(), env.clone())),

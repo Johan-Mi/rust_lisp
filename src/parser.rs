@@ -50,7 +50,7 @@ fn parse_quoted_expression(tokens: &[Token]) -> Option<(Quote, &[Token])> {
 fn parse_cons(tokens: &[Token]) -> Option<(Cons, &[Token])> {
     fn parse_cons_helper(tokens: &[Token]) -> Option<(Cons, &[Token])> {
         if let Some(unconsumed_tokens) = parse_rparen(tokens) {
-            Some((Cons::Nil, unconsumed_tokens))
+            Some((Cons(None), unconsumed_tokens))
         } else {
             let (first_expr, remaining_tokens) = parse_expression(tokens)?;
             if let Some(remaining_tokens) = parse_dot(remaining_tokens) {
@@ -58,17 +58,17 @@ fn parse_cons(tokens: &[Token]) -> Option<(Cons, &[Token])> {
                     parse_expression(remaining_tokens)?;
                 let unconsumed_tokens = parse_rparen(remaining_tokens)?;
                 Some((
-                    Cons::Some(Rc::new(first_expr), Rc::new(last_expr)),
+                    Cons(Some((Rc::new(first_expr), Rc::new(last_expr)))),
                     unconsumed_tokens,
                 ))
             } else {
                 let (rest, remaining_tokens) =
                     parse_cons_helper(remaining_tokens)?;
                 Some((
-                    Cons::Some(
+                    Cons(Some((
                         Rc::new(first_expr),
                         Rc::new(Object::Cons(rest)),
-                    ),
+                    ))),
                     remaining_tokens,
                 ))
             }

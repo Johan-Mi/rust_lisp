@@ -62,18 +62,18 @@ impl Symbol {
             symbol: &Symbol,
             env: &Cons,
         ) -> Result<Rc<Object>> {
-            match env {
-                Cons::Nil => bail!("Unbound variable {symbol}"),
-                Cons::Some(first, rest) => match &*first.clone().car()? {
-                    Object::Symbol(found_symbol) if symbol == found_symbol => {
-                        first.clone().cdr()
+            let Some((first, rest)) = &env.0 else {
+                bail!("Unbound variable {symbol}");
+            };
+            match &*first.clone().car()? {
+                Object::Symbol(found_symbol) if symbol == found_symbol => {
+                    first.clone().cdr()
+                }
+                _ => match &**rest {
+                    Object::Cons(next_cons) => {
+                        eval_symbol_internal(symbol, next_cons)
                     }
-                    _ => match &**rest {
-                        Object::Cons(next_cons) => {
-                            eval_symbol_internal(symbol, next_cons)
-                        }
-                        _ => bail!("Unbound variable {symbol}"),
-                    },
+                    _ => bail!("Unbound variable {symbol}"),
                 },
             }
         }

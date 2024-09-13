@@ -44,45 +44,44 @@ fn join_two_lists_obj(
 }
 
 pub fn join_two_lists_cons(first: &Cons, second: &Cons, last: &Cons) -> Cons {
-    match (first, second) {
-        (
-            Cons::Some(first_car, first_cdr),
-            Cons::Some(second_car, second_cdr),
-        ) => Cons::Some(
-            Rc::new(Object::Cons(Cons::Some(
-                first_car.clone(),
-                second_car.clone(),
-            ))),
-            Rc::new(Object::Cons(join_two_lists_obj(
-                first_cdr, second_cdr, last,
-            ))),
-        ),
+    match (&first.0, &second.0) {
+        (Some((first_car, first_cdr)), Some((second_car, second_cdr))) => {
+            Cons(Some((
+                Rc::new(Object::Cons(Cons(Some((
+                    first_car.clone(),
+                    second_car.clone(),
+                ))))),
+                Rc::new(Object::Cons(join_two_lists_obj(
+                    first_cdr, second_cdr, last,
+                ))),
+            )))
+        }
         _ => last.clone(),
     }
 }
 
 pub fn eval_list_elements(list: &Cons, env: &Cons) -> Result<(Cons, Cons)> {
-    match list {
-        Cons::Nil => Ok((list.clone(), env.clone())),
-        Cons::Some(first, second) => match &**second {
+    match &list.0 {
+        None => Ok((list.clone(), env.clone())),
+        Some((first, second)) => match &**second {
             Object::Cons(rest) => {
                 let (evaluated_first, env) = first.clone().eval(env)?;
                 let (evaluated_rest, env) = eval_list_elements(rest, &env)?;
                 Ok((
-                    Cons::Some(
+                    Cons(Some((
                         evaluated_first,
                         Rc::<Object>::new(Object::Cons(evaluated_rest)),
-                    ),
+                    ))),
                     env,
                 ))
             }
             _ => {
                 let (evaluated_first, env) = first.clone().eval(env)?;
                 Ok((
-                    Cons::Some(
+                    Cons(Some((
                         evaluated_first,
-                        Rc::new(Object::Cons(Cons::Nil)),
-                    ),
+                        Rc::new(Object::Cons(Cons(None))),
+                    ))),
                     env,
                 ))
             }
@@ -93,11 +92,11 @@ pub fn eval_list_elements(list: &Cons, env: &Cons) -> Result<(Cons, Cons)> {
 #[macro_export]
 macro_rules! make_list {
     () => {
-        Cons::Nil
+        Cons(None)
     };
 
     ($first:expr $(, $rest:expr)*) => {
-        Cons::Some($first, Rc::new(Object::Cons(make_list!($($rest),*))))
+        Cons(Some(($first, Rc::new(Object::Cons(make_list!($($rest),*))))))
     };
 }
 

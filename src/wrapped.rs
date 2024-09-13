@@ -35,7 +35,7 @@ wrap_fallible!(int_to_bool, |obj: Rc<_>| functions::int_to_bool(&obj));
 wrap_fallible!(bool_to_int, |obj: Rc<_>| functions::bool_to_int(&obj));
 wrap_infallible!(is_nil, |obj: Rc<_>| Rc::new(Object::Bool(matches!(
     &*obj,
-    Object::Cons(Cons::Nil)
+    Object::Cons(Cons(None))
 ))));
 wrap_infallible!(is_int, |obj: Rc<_>| Rc::new(Object::Bool(matches!(
     &*obj,
@@ -55,13 +55,13 @@ pub fn cons(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
     functions::ensure_n_args("wrapped_cons", 2, args)?;
     let (car, env) = args.car().eval(env)?;
     let (cdr, env) = args.cdr().car()?.eval(&env)?;
-    Ok((Rc::new(Object::Cons(Cons::Some(car, cdr))), env))
+    Ok((Rc::new(Object::Cons(Cons(Some((car, cdr))))), env))
 }
 
 pub fn add(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
-    match args {
-        Cons::Nil => Ok((Rc::new(Object::Integer(0)), env.clone())),
-        Cons::Some(car, cdr) => match &**cdr {
+    match &args.0 {
+        None => Ok((Rc::new(Object::Integer(0)), env.clone())),
+        Some((car, cdr)) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = car.clone().eval(env)?;
                 let (rhs, env) = add(rest, &env)?;
@@ -91,9 +91,9 @@ pub fn sub(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
 }
 
 pub fn mul(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
-    match args {
-        Cons::Nil => Ok((Rc::new(Object::Integer(1)), env.clone())),
-        Cons::Some(car, cdr) => match &**cdr {
+    match &args.0 {
+        None => Ok((Rc::new(Object::Integer(1)), env.clone())),
+        Some((car, cdr)) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = car.clone().eval(env)?;
                 let (rhs, env) = mul(rest, &env)?;
@@ -121,9 +121,9 @@ pub fn lambda(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
 }
 
 pub fn and(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
-    match args {
-        Cons::Nil => Ok((Rc::new(Object::Bool(true)), env.clone())),
-        Cons::Some(car, cdr) => match &**cdr {
+    match &args.0 {
+        None => Ok((Rc::new(Object::Bool(true)), env.clone())),
+        Some((car, cdr)) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = car.clone().eval(env)?;
                 if functions::is_truthy(&lhs) {
@@ -138,9 +138,9 @@ pub fn and(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
 }
 
 pub fn or(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
-    match args {
-        Cons::Nil => Ok((Rc::new(Object::Bool(false)), env.clone())),
-        Cons::Some(car, cdr) => match &**cdr {
+    match &args.0 {
+        None => Ok((Rc::new(Object::Bool(false)), env.clone())),
+        Some((car, cdr)) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = car.clone().eval(env)?;
                 if functions::is_truthy(&lhs) {
@@ -161,13 +161,13 @@ pub fn define(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
             let (var_value, env) = args.cdr().car()?.eval(env)?;
             Ok((
                 Rc::new(Object::Symbol(var_name.clone())),
-                Cons::Some(
-                    Rc::new(Object::Cons(Cons::Some(
+                Cons(Some((
+                    Rc::new(Object::Cons(Cons(Some((
                         Rc::new(Object::Symbol(var_name.clone())),
                         var_value,
-                    ))),
+                    ))))),
                     Rc::new(Object::Cons(env)),
-                ),
+                ))),
             ))
         }
         _ => bail!("first argument passed to define must be a symbol"),

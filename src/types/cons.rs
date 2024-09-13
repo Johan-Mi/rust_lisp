@@ -3,16 +3,13 @@ use anyhow::{bail, Result};
 use std::{fmt, rc::Rc};
 
 #[derive(Clone)]
-pub enum Cons {
-    Some(Rc<Object>, Rc<Object>),
-    Nil,
-}
+pub struct Cons(pub Option<(Rc<Object>, Rc<Object>)>);
 
 impl Cons {
     pub fn len(&self) -> usize {
-        match self {
-            Self::Nil => 0,
-            Self::Some(_, next) => match &**next {
+        match &self.0 {
+            None => 0,
+            Some((_, next)) => match &**next {
                 Object::Cons(rest) => rest.len() + 1,
                 _ => 1,
             },
@@ -20,23 +17,23 @@ impl Cons {
     }
 
     pub fn car(&self) -> Rc<Object> {
-        match self {
-            Self::Some(first, _) => first.clone(),
-            Self::Nil => Rc::new(Object::Cons(Self::Nil)),
+        match &self.0 {
+            Some((first, _)) => first.clone(),
+            None => Rc::new(Object::Cons(Self(None))),
         }
     }
 
     pub fn cdr(&self) -> Rc<Object> {
-        match self {
-            Self::Some(_, second) => second.clone(),
-            Self::Nil => Rc::new(Object::Cons(Self::Nil)),
+        match &self.0 {
+            Some((_, second)) => second.clone(),
+            None => Rc::new(Object::Cons(Self(None))),
         }
     }
 
     pub fn is_proper_list(&self) -> bool {
-        match self {
-            Self::Nil => true,
-            Self::Some(_, next) => match &**next {
+        match &self.0 {
+            None => true,
+            Some((_, next)) => match &**next {
                 Object::Cons(rest) => rest.is_proper_list(),
                 _ => false,
             },
@@ -56,17 +53,17 @@ impl fmt::Display for Cons {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         fn to_cons_string(obj: &Object) -> String {
             match obj {
-                Object::Cons(Cons::Nil) => String::new(),
-                Object::Cons(Cons::Some(first, second)) => {
+                Object::Cons(Cons(None)) => String::new(),
+                Object::Cons(Cons(Some((first, second)))) => {
                     format!(" {}{}", first, to_cons_string(second))
                 }
                 _ => format!(" . {obj}"),
             }
         }
 
-        match self {
-            Self::Nil => write!(formatter, "()"),
-            Self::Some(first, second) => {
+        match &self.0 {
+            None => write!(formatter, "()"),
+            Some((first, second)) => {
                 write!(formatter, "({first}{})", to_cons_string(second))
             }
         }
