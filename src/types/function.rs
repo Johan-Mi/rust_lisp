@@ -17,7 +17,7 @@ impl fmt::Display for Function {
 }
 
 impl Function {
-    pub fn new(parameters: Cons, body: Rc<Object>) -> Self {
+    pub const fn new(parameters: Cons, body: Rc<Object>) -> Self {
         Self { parameters, body }
     }
 

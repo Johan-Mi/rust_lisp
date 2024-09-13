@@ -20,7 +20,7 @@ impl fmt::Display for Quote {
 }
 
 impl Quote {
-    pub fn new(contained: Rc<Object>) -> Self {
+    pub const fn new(contained: Rc<Object>) -> Self {
         Self { contained }
     }
 }
