@@ -1,4 +1,4 @@
-use crate::{functions::*, types::*};
+use crate::{functions, types::*};
 use anyhow::{bail, Result};
 use std::rc::Rc;
 
@@ -8,7 +8,7 @@ macro_rules! wrap_fallible {
             args: &Cons,
             env: &Cons,
         ) -> Result<(Rc<Object>, Cons)> {
-            ensure_n_args(stringify!($wrapped_name), 1, args)?;
+            functions::ensure_n_args(stringify!($wrapped_name), 1, args)?;
             let (first_arg, env) = args.car().eval(env)?;
             Ok(($unwrapped_name(first_arg)?, env))
         }
@@ -21,88 +21,91 @@ macro_rules! wrap_infallible {
             args: &Cons,
             env: &Cons,
         ) -> Result<(Rc<Object>, Cons)> {
-            ensure_n_args(stringify!($wrapped_name), 1, args)?;
+            functions::ensure_n_args(stringify!($wrapped_name), 1, args)?;
             let (first_arg, env) = args.car().eval(env)?;
             Ok(($unwrapped_name(first_arg), env))
         }
     };
 }
 
-wrap_fallible!(wrapped_car, Object::car);
-wrap_fallible!(wrapped_cdr, Object::cdr);
-wrap_infallible!(wrapped_not, |obj: Rc<_>| not(&obj));
-wrap_fallible!(wrapped_int_to_bool, |obj: Rc<_>| int_to_bool(&obj));
-wrap_fallible!(wrapped_bool_to_int, |obj: Rc<_>| bool_to_int(&obj));
-wrap_infallible!(wrapped_is_nil, |obj: Rc<_>| Rc::new(Object::Bool(
-    matches!(&*obj, Object::Cons(Cons::Nil))
-)));
-wrap_infallible!(wrapped_is_int, |obj: Rc<_>| Rc::new(Object::Bool(
-    matches!(&*obj, Object::Integer(_))
-)));
-wrap_infallible!(wrapped_is_bool, |obj: Rc<_>| Rc::new(Object::Bool(
-    matches!(&*obj, Object::Bool(_))
-)));
+wrap_fallible!(car, Object::car);
+wrap_fallible!(cdr, Object::cdr);
+wrap_infallible!(not, |obj: Rc<_>| functions::not(&obj));
+wrap_fallible!(int_to_bool, |obj: Rc<_>| functions::int_to_bool(&obj));
+wrap_fallible!(bool_to_int, |obj: Rc<_>| functions::bool_to_int(&obj));
+wrap_infallible!(is_nil, |obj: Rc<_>| Rc::new(Object::Bool(matches!(
+    &*obj,
+    Object::Cons(Cons::Nil)
+))));
+wrap_infallible!(is_int, |obj: Rc<_>| Rc::new(Object::Bool(matches!(
+    &*obj,
+    Object::Integer(_)
+))));
+wrap_infallible!(is_bool, |obj: Rc<_>| Rc::new(Object::Bool(matches!(
+    &*obj,
+    Object::Bool(_)
+))));
 
-pub fn wrapped_quote(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
-    ensure_n_args("wrapped_quote", 1, args)?;
+pub fn quote(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
+    functions::ensure_n_args("wrapped_quote", 1, args)?;
     Ok((args.car(), env.clone()))
 }
 
-pub fn wrapped_cons(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
-    ensure_n_args("wrapped_cons", 2, args)?;
+pub fn cons(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
+    functions::ensure_n_args("wrapped_cons", 2, args)?;
     let (car, env) = args.car().eval(env)?;
     let (cdr, env) = args.cdr().car()?.eval(&env)?;
     Ok((Rc::new(Object::Cons(Cons::Some(car, cdr))), env))
 }
 
-pub fn wrapped_add(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
+pub fn add(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
     match args {
         Cons::Nil => Ok((Rc::new(Object::Integer(0)), env.clone())),
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = car.clone().eval(env)?;
-                let (rhs, env) = wrapped_add(rest, &env)?;
-                Ok((Rc::new(add(&lhs, &rhs)?), env))
+                let (rhs, env) = add(rest, &env)?;
+                Ok((Rc::new(functions::add(&lhs, &rhs)?), env))
             }
             _ => bail!("arguments passed to wrapped_add must be a proper list"),
         },
     }
 }
 
-pub fn wrapped_sub(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
+pub fn sub(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
     match args.len() {
         0 => bail!("wrapped_sub expected at least 1 argument but got 0"),
         1 => {
             let (rhs, env) = args.car().eval(env)?;
-            Ok((Rc::new(sub(&Object::Integer(0), &rhs)?), env))
+            Ok((Rc::new(functions::sub(&Object::Integer(0), &rhs)?), env))
         }
         _ => match &*args.cdr() {
             Object::Cons(rest) => {
                 let (lhs, env) = args.car().eval(env)?;
-                let (rhs, env) = wrapped_add(rest, &env)?;
-                Ok((Rc::new(sub(&lhs, &rhs)?), env))
+                let (rhs, env) = add(rest, &env)?;
+                Ok((Rc::new(functions::sub(&lhs, &rhs)?), env))
             }
             _ => bail!("arguments passed to wrapped_sub must be a proper list"),
         },
     }
 }
 
-pub fn wrapped_mul(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
+pub fn mul(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
     match args {
         Cons::Nil => Ok((Rc::new(Object::Integer(1)), env.clone())),
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = car.clone().eval(env)?;
-                let (rhs, env) = wrapped_mul(rest, &env)?;
-                Ok((Rc::new(mul(&lhs, &rhs)?), env))
+                let (rhs, env) = mul(rest, &env)?;
+                Ok((Rc::new(functions::mul(&lhs, &rhs)?), env))
             }
             _ => bail!("arguments passed to wrapped_mul must be a proper list"),
         },
     }
 }
 
-pub fn wrapped_lambda(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
-    ensure_n_args("wrapped_lambda", 2, args)?;
+pub fn lambda(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
+    functions::ensure_n_args("wrapped_lambda", 2, args)?;
     match &*args.car() {
         Object::Cons(param_list) => Ok((
             Rc::new(Object::Function(Function::new(
@@ -117,14 +120,14 @@ pub fn wrapped_lambda(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
     }
 }
 
-pub fn wrapped_and(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
+pub fn and(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
     match args {
         Cons::Nil => Ok((Rc::new(Object::Bool(true)), env.clone())),
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = car.clone().eval(env)?;
-                if is_truthy(&lhs) {
-                    wrapped_and(rest, &env)
+                if functions::is_truthy(&lhs) {
+                    and(rest, &env)
                 } else {
                     Ok((lhs, env))
                 }
@@ -134,16 +137,16 @@ pub fn wrapped_and(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
     }
 }
 
-pub fn wrapped_or(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
+pub fn or(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
     match args {
         Cons::Nil => Ok((Rc::new(Object::Bool(false)), env.clone())),
         Cons::Some(car, cdr) => match &**cdr {
             Object::Cons(rest) => {
                 let (lhs, env) = car.clone().eval(env)?;
-                if is_truthy(&lhs) {
+                if functions::is_truthy(&lhs) {
                     Ok((lhs, env))
                 } else {
-                    wrapped_or(rest, &env)
+                    or(rest, &env)
                 }
             }
             _ => bail!("arguments passed to wrapped_or must be a proper list"),
@@ -151,8 +154,8 @@ pub fn wrapped_or(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
     }
 }
 
-pub fn wrapped_define(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
-    ensure_n_args("wrapped_define", 2, args)?;
+pub fn define(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
+    functions::ensure_n_args("wrapped_define", 2, args)?;
     match &*args.car() {
         Object::Symbol(var_name) => {
             let (var_value, env) = args.cdr().car()?.eval(env)?;
@@ -171,10 +174,10 @@ pub fn wrapped_define(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
     }
 }
 
-pub fn wrapped_if(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
-    ensure_n_args("wrapped_if", 3, args)?;
+pub fn r#if(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
+    functions::ensure_n_args("wrapped_if", 3, args)?;
     let (condition, env) = args.car().eval(env)?;
-    if is_truthy(&condition) {
+    if functions::is_truthy(&condition) {
         args.cdr().car()?.eval(&env)
     } else {
         args.cdr().cdr()?.car()?.eval(&env)

@@ -11,7 +11,6 @@ use lexer::lex;
 use parser::parse_expressions;
 use std::{fs, rc::Rc};
 use types::{BuiltinFunction, Cons, Object};
-use wrapped::*;
 
 macro_rules! make_env {
     ($($name:literal = $value:expr),*) => {
@@ -31,24 +30,24 @@ fn main() -> Result<()> {
         |func| Rc::new(Object::BuiltinFunction(BuiltinFunction(func)));
 
     let mut env = make_env![
-        "car" = builtin_function(wrapped_car),
-        "cdr" = builtin_function(wrapped_cdr),
-        "cons" = builtin_function(wrapped_cons),
-        "lambda" = builtin_function(wrapped_lambda),
-        "+" = builtin_function(wrapped_add),
-        "-" = builtin_function(wrapped_sub),
-        "*" = builtin_function(wrapped_mul),
-        "quote" = builtin_function(wrapped_quote),
-        "int->bool" = builtin_function(wrapped_int_to_bool),
-        "bool->int" = builtin_function(wrapped_bool_to_int),
-        "and" = builtin_function(wrapped_and),
-        "or" = builtin_function(wrapped_or),
-        "not" = builtin_function(wrapped_not),
-        "define" = builtin_function(wrapped_define),
-        "nil?" = builtin_function(wrapped_is_nil),
-        "int?" = builtin_function(wrapped_is_int),
-        "bool?" = builtin_function(wrapped_is_bool),
-        "if" = builtin_function(wrapped_if),
+        "car" = builtin_function(wrapped::car),
+        "cdr" = builtin_function(wrapped::cdr),
+        "cons" = builtin_function(wrapped::cons),
+        "lambda" = builtin_function(wrapped::lambda),
+        "+" = builtin_function(wrapped::add),
+        "-" = builtin_function(wrapped::sub),
+        "*" = builtin_function(wrapped::mul),
+        "quote" = builtin_function(wrapped::quote),
+        "int->bool" = builtin_function(wrapped::int_to_bool),
+        "bool->int" = builtin_function(wrapped::bool_to_int),
+        "and" = builtin_function(wrapped::and),
+        "or" = builtin_function(wrapped::or),
+        "not" = builtin_function(wrapped::not),
+        "define" = builtin_function(wrapped::define),
+        "nil?" = builtin_function(wrapped::is_nil),
+        "int?" = builtin_function(wrapped::is_int),
+        "bool?" = builtin_function(wrapped::is_bool),
+        "if" = builtin_function(wrapped::r#if),
         "true" = Rc::new(Object::Bool(true)),
         "false" = Rc::new(Object::Bool(false))
     ];
