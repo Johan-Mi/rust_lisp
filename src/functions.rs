@@ -63,9 +63,9 @@ pub fn join_two_lists_cons(first: &Cons, second: &Cons, last: &Cons) -> Cons {
 pub fn eval_list_elements(list: &Cons, env: &Cons) -> Result<(Cons, Cons)> {
     match &list.0 {
         None => Ok((list.clone(), env.clone())),
-        Some((first, second)) => match &**second {
-            Object::Cons(rest) => {
-                let (evaluated_first, env) = first.clone().eval(env)?;
+        Some((first, second)) => {
+            let (evaluated_first, env) = first.clone().eval(env)?;
+            if let Object::Cons(rest) = &**second {
                 let (evaluated_rest, env) = eval_list_elements(rest, &env)?;
                 Ok((
                     Cons(Some((
@@ -74,9 +74,7 @@ pub fn eval_list_elements(list: &Cons, env: &Cons) -> Result<(Cons, Cons)> {
                     ))),
                     env,
                 ))
-            }
-            _ => {
-                let (evaluated_first, env) = first.clone().eval(env)?;
+            } else {
                 Ok((
                     Cons(Some((
                         evaluated_first,
@@ -85,7 +83,7 @@ pub fn eval_list_elements(list: &Cons, env: &Cons) -> Result<(Cons, Cons)> {
                     env,
                 ))
             }
-        },
+        }
     }
 }
 
