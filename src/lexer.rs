@@ -22,9 +22,7 @@ pub fn lex(mut source: &str) -> Vec<Token> {
             s
         } else {
             let ident_end = source
-                .find(|c: char| {
-                    c.is_whitespace() || matches!(c, '(' | ')' | '\'')
-                })
+                .find(|c: char| c.is_whitespace() || matches!(c, '(' | ')' | '\''))
                 .unwrap_or(source.len());
             if ident_end == 0 {
                 break;

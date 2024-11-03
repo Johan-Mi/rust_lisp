@@ -5,57 +5,43 @@ use std::rc::Rc;
 
 pub fn add(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object> {
     match (lhs_obj, rhs_obj) {
-        (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Ok(Object::Integer(lhs + rhs))
-        }
+        (Object::Integer(lhs), Object::Integer(rhs)) => Ok(Object::Integer(lhs + rhs)),
         _ => Err(make_type_error("add", &[lhs_obj, rhs_obj])),
     }
 }
 
 pub fn sub(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object> {
     match (lhs_obj, rhs_obj) {
-        (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Ok(Object::Integer(lhs - rhs))
-        }
+        (Object::Integer(lhs), Object::Integer(rhs)) => Ok(Object::Integer(lhs - rhs)),
         _ => Err(make_type_error("sub", &[lhs_obj, rhs_obj])),
     }
 }
 
 pub fn mul(lhs_obj: &Object, rhs_obj: &Object) -> Result<Object> {
     match (lhs_obj, rhs_obj) {
-        (Object::Integer(lhs), Object::Integer(rhs)) => {
-            Ok(Object::Integer(lhs * rhs))
-        }
+        (Object::Integer(lhs), Object::Integer(rhs)) => Ok(Object::Integer(lhs * rhs)),
         _ => Err(make_type_error("mul", &[lhs_obj, rhs_obj])),
     }
 }
 
-fn join_two_lists_obj(
-    first_obj: &Object,
-    second_obj: &Object,
-    last: &Cons,
-) -> Cons {
+fn join_two_lists_obj(first_obj: &Object, second_obj: &Object, last: &Cons) -> Cons {
     match (first_obj, second_obj) {
-        (Object::Cons(first), Object::Cons(second)) => {
-            join_two_lists_cons(first, second, last)
-        }
+        (Object::Cons(first), Object::Cons(second)) => join_two_lists_cons(first, second, last),
         _ => last.clone(),
     }
 }
 
 pub fn join_two_lists_cons(first: &Cons, second: &Cons, last: &Cons) -> Cons {
     match (&first.0, &second.0) {
-        (Some((first_car, first_cdr)), Some((second_car, second_cdr))) => {
-            Cons(Some((
-                Rc::new(Object::Cons(Cons(Some((
-                    first_car.clone(),
-                    second_car.clone(),
-                ))))),
-                Rc::new(Object::Cons(join_two_lists_obj(
-                    first_cdr, second_cdr, last,
-                ))),
-            )))
-        }
+        (Some((first_car, first_cdr)), Some((second_car, second_cdr))) => Cons(Some((
+            Rc::new(Object::Cons(Cons(Some((
+                first_car.clone(),
+                second_car.clone(),
+            ))))),
+            Rc::new(Object::Cons(join_two_lists_obj(
+                first_cdr, second_cdr, last,
+            ))),
+        ))),
         _ => last.clone(),
     }
 }
@@ -76,10 +62,7 @@ pub fn eval_list_elements(list: &Cons, env: &Cons) -> Result<(Cons, Cons)> {
                 ))
             } else {
                 Ok((
-                    Cons(Some((
-                        evaluated_first,
-                        Rc::new(Object::Cons(Cons(None))),
-                    ))),
+                    Cons(Some((evaluated_first, Rc::new(Object::Cons(Cons(None)))))),
                     env,
                 ))
             }

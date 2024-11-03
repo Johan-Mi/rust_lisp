@@ -4,10 +4,7 @@ use std::rc::Rc;
 
 macro_rules! wrap_fallible {
     ($wrapped_name:ident, $unwrapped_name:expr) => {
-        pub fn $wrapped_name(
-            args: &Cons,
-            env: &Cons,
-        ) -> Result<(Rc<Object>, Cons)> {
+        pub fn $wrapped_name(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
             functions::ensure_n_args(stringify!($wrapped_name), 1, args)?;
             let (first_arg, env) = args.car().eval(env)?;
             Ok(($unwrapped_name(first_arg)?, env))
@@ -17,10 +14,7 @@ macro_rules! wrap_fallible {
 
 macro_rules! wrap_infallible {
     ($wrapped_name:ident, $unwrapped_name:expr) => {
-        pub fn $wrapped_name(
-            args: &Cons,
-            env: &Cons,
-        ) -> Result<(Rc<Object>, Cons)> {
+        pub fn $wrapped_name(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
             functions::ensure_n_args(stringify!($wrapped_name), 1, args)?;
             let (first_arg, env) = args.car().eval(env)?;
             Ok(($unwrapped_name(first_arg), env))
@@ -114,9 +108,7 @@ pub fn lambda(args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
             ))),
             env.clone(),
         )),
-        _ => bail!(
-            "first argument of lambda definition must be a list of parameters"
-        ),
+        _ => bail!("first argument of lambda definition must be a list of parameters"),
     }
 }
 

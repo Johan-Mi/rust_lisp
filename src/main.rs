@@ -26,8 +26,7 @@ macro_rules! make_env {
 }
 
 fn main() -> Result<()> {
-    let builtin_function =
-        |func| Rc::new(Object::BuiltinFunction(BuiltinFunction(func)));
+    let builtin_function = |func| Rc::new(Object::BuiltinFunction(BuiltinFunction(func)));
 
     let mut env = make_env![
         "car" = builtin_function(wrapped::car),
@@ -52,12 +51,10 @@ fn main() -> Result<()> {
         "false" = Rc::new(Object::Bool(false))
     ];
 
-    let source_code = fs::read_to_string("program.lisp")
-        .context("failed to read source file")?;
+    let source_code = fs::read_to_string("program.lisp").context("failed to read source file")?;
 
     let lexed = lex(&source_code);
-    let (exprs, _) =
-        parse_expressions(&lexed).context("failed to parse source code")?;
+    let (exprs, _) = parse_expressions(&lexed).context("failed to parse source code")?;
 
     for e in exprs {
         println!("{e}");

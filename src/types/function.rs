@@ -23,10 +23,8 @@ impl Function {
 
     pub fn apply(&self, args: &Cons, env: &Cons) -> Result<(Rc<Object>, Cons)> {
         let (calling_args, env) = eval_list_elements(args, env)?;
-        self.body.clone().eval(&join_two_lists_cons(
-            &self.parameters,
-            &calling_args,
-            &env,
-        ))
+        self.body
+            .clone()
+            .eval(&join_two_lists_cons(&self.parameters, &calling_args, &env))
     }
 }

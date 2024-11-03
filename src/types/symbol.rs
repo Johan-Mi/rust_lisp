@@ -38,14 +38,11 @@ impl FromStr for Symbol {
         }
 
         fn char_is_symbol_subsequent(c: char) -> bool {
-            char_is_symbol_initial(c)
-                || c.is_ascii_digit()
-                || matches!(c, '+' | '.' | '@' | '-')
+            char_is_symbol_initial(c) || c.is_ascii_digit() || matches!(c, '+' | '.' | '@' | '-')
         }
 
         if matches!(s, "+" | "-" | "...")
-            || s.starts_with(char_is_symbol_initial)
-                && s.chars().all(char_is_symbol_subsequent)
+            || s.starts_with(char_is_symbol_initial) && s.chars().all(char_is_symbol_subsequent)
         {
             Ok(Self {
                 name: String::from(s),
@@ -58,21 +55,14 @@ impl FromStr for Symbol {
 
 impl Symbol {
     pub fn eval(&self, env: &Cons) -> Result<(Rc<Object>, Cons)> {
-        fn eval_symbol_internal(
-            symbol: &Symbol,
-            env: &Cons,
-        ) -> Result<Rc<Object>> {
+        fn eval_symbol_internal(symbol: &Symbol, env: &Cons) -> Result<Rc<Object>> {
             let Some((first, rest)) = &env.0 else {
                 bail!("Unbound variable {symbol}");
             };
             match &*first.clone().car()? {
-                Object::Symbol(found_symbol) if symbol == found_symbol => {
-                    first.clone().cdr()
-                }
+                Object::Symbol(found_symbol) if symbol == found_symbol => first.clone().cdr(),
                 _ => match &**rest {
-                    Object::Cons(next_cons) => {
-                        eval_symbol_internal(symbol, next_cons)
-                    }
+                    Object::Cons(next_cons) => eval_symbol_internal(symbol, next_cons),
                     _ => bail!("Unbound variable {symbol}"),
                 },
             }

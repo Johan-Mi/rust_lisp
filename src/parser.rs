@@ -54,21 +54,16 @@ fn parse_cons(tokens: &[Token]) -> Option<(Cons, &[Token])> {
         } else {
             let (first_expr, remaining_tokens) = parse_expression(tokens)?;
             if let Some(remaining_tokens) = parse_dot(remaining_tokens) {
-                let (last_expr, remaining_tokens) =
-                    parse_expression(remaining_tokens)?;
+                let (last_expr, remaining_tokens) = parse_expression(remaining_tokens)?;
                 let unconsumed_tokens = parse_rparen(remaining_tokens)?;
                 Some((
                     Cons(Some((Rc::new(first_expr), Rc::new(last_expr)))),
                     unconsumed_tokens,
                 ))
             } else {
-                let (rest, remaining_tokens) =
-                    parse_cons_helper(remaining_tokens)?;
+                let (rest, remaining_tokens) = parse_cons_helper(remaining_tokens)?;
                 Some((
-                    Cons(Some((
-                        Rc::new(first_expr),
-                        Rc::new(Object::Cons(rest)),
-                    ))),
+                    Cons(Some((Rc::new(first_expr), Rc::new(Object::Cons(rest))))),
                     remaining_tokens,
                 ))
             }
@@ -93,9 +88,7 @@ pub fn parse_expression(tokens: &[Token]) -> Option<(Object, &[Token])> {
     }
 }
 
-pub fn parse_expressions(
-    mut tokens: &[Token],
-) -> Option<(Vec<Object>, &[Token])> {
+pub fn parse_expressions(mut tokens: &[Token]) -> Option<(Vec<Object>, &[Token])> {
     let mut ret = Vec::new();
 
     while let Some((expr, remaining_tokens)) = parse_expression(tokens) {

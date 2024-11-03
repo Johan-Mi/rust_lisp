@@ -72,10 +72,9 @@ impl Object {
 
     pub fn eval(self: Rc<Self>, env: &Cons) -> Result<(Rc<Self>, Cons)> {
         match &*self {
-            Self::Integer(_)
-            | Self::Bool(_)
-            | Self::Function(_)
-            | Self::BuiltinFunction(_) => Ok((self, env.clone())),
+            Self::Integer(_) | Self::Bool(_) | Self::Function(_) | Self::BuiltinFunction(_) => {
+                Ok((self, env.clone()))
+            }
             Self::Cons(cons) => match &cons.0 {
                 None => Ok((self, env.clone())),
                 Some(_) => cons.eval(env),
